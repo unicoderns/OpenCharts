@@ -1,4 +1,4 @@
 # OpenCharts
-Is time to beautiful easier charts.
+It's time to easier beautiful charts.
 
-See http://OpenCharts.org for more.
+See our proof of concept at http://OpenCharts.org for more.
