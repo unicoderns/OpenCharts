@@ -22,25 +22,89 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+
+//------------------------------------------------------------------------------------------
+// Main Object, everything it's contained here
+//------------------------------------------------------------------------------------------
 var opencharts = {
-    selector: "",
-    scope: "",
-    data: "",
-    type: "",
-    select: function(selector){
-        this.selector = selector;
-        return this;
-    },
-    all: function(){
-        this.scope = "*";
-        return this;
-    },
-    data: function(data){
-        this.data = data;
-        return this;
-    },
-    print: function(){
-        console.log(this);
-        return this;
-    }
+    _selector: "",
+    _data: "",
+    _type: ""//,
+//    _settings: {}, // Settings for each chart
 }
+
+//------------------------------------------------------------------------------------------
+// Select the chart
+//------------------------------------------------------------------------------------------
+opencharts.select =  function(selector){
+    "use strict";
+
+    this._selector = selector;
+    return this;
+}
+
+//------------------------------------------------------------------------------------------
+// Set the data for the current chart
+//------------------------------------------------------------------------------------------
+opencharts.data =  function(data){
+    "use strict";
+
+    this._data = data;
+    return this;
+}
+
+//------------------------------------------------------------------------------------------
+// Print the current object
+//------------------------------------------------------------------------------------------
+opencharts.print =  function(){
+    "use strict";
+
+    console.log(this);
+    return this;
+}
+
+//------------------------------------------------------------------------------------------
+// Init
+//------------------------------------------------------------------------------------------
+opencharts._init = function() {
+    "use strict";
+
+}
+
+//------------------------------------------------------------------------------------------
+// Getting data object from DOM using d3
+//------------------------------------------------------------------------------------------
+opencharts._getData = function(selector) {
+    "use strict";
+
+    var dataString = d3.select(selector)[0][0].dataset.object;
+    var dataArray = dataString.split(".");
+    var data;
+    
+    dataArray.forEach(function(key) { // Getting data object
+        if (!data) {
+            data = window[key];
+        } else {
+            data = data[key];
+        }
+    });
+
+    return data;
+}
+
+//------------------------------------------------------------------------------------------
+// On page load create custom-tags elements
+//------------------------------------------------------------------------------------------
+document.addEventListener("DOMContentLoaded", function() {
+    "use strict";
+
+    var pieElements = d3.selectAll("opencharts-pie");
+
+    pieElements.forEach(function(key) { // Creating charts
+        var id = key[0].id;
+        var selector = "#" + id;
+        var data = opencharts._getData(selector);
+
+        opencharts.select(selector).data(data).pie().create(); // Create pie
+    });
+});

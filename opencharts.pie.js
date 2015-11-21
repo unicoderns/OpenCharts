@@ -22,14 +22,20 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+//------------------------------------------------------------------------------------------
+// Set type of chart
+//------------------------------------------------------------------------------------------
 opencharts.pie = function(){
-    this.type = "pie";
+    this._type = "pie";
     return this;
 }
 
+//------------------------------------------------------------------------------------------
+// Create pie chart
+//------------------------------------------------------------------------------------------
 opencharts.pie().create = function(){
     
-    var _data = this.data;
+    var _data = this._data;
     var w = 400;
     var h = 400;
     var r = h/2;
@@ -37,7 +43,7 @@ opencharts.pie().create = function(){
 
 
 
-    var vis = d3.select(this.selector).append("svg:svg").data([_data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
+    var vis = d3.select(this._selector).append("svg:svg").data([_data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
     var pie = d3.layout.pie().value(function(d){return d.value;});
 
     // declare an arc generator function

@@ -29,5 +29,8 @@ oc_examples.data = [{"label":"Category A", "value":20},
                    {"label":"Category B", "value":50}, 
                    {"label":"Category C", "value":30}];
 
+oc_examples.data2 = [{"label":"Category A", "value":50}, 
+                   {"label":"Category B", "value":30}, 
+                   {"label":"Category C", "value":90}];
 
 opencharts.select("#hola").data(oc_examples.data).pie().create();
