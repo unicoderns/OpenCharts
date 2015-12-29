@@ -89,12 +89,18 @@ document.addEventListener("DOMContentLoaded", function() {
     "use strict";
 
     var pieElements = d3.selectAll("opencharts-pie");
+    pieElements = pieElements[0];
 
-    pieElements.forEach(function(key) { // Creating charts
-        var id = key[0].id;
-        var selector = "#" + id;
-        var data = opencharts._getData(selector);
+    console.log("pieElements");
+    console.log(pieElements);
+    if (pieElements.length) {
 
-        opencharts.select(selector).pie().data(data).create(); // Create pie
-    });
+        pieElements.forEach(function(key) { // Creating charts
+            var id = key.id;
+            var selector = "#" + id;
+            var data = opencharts._getData(selector);
+
+            opencharts.select(selector).pie().data(data).create(); // Create pie
+        });
+    }
 });
