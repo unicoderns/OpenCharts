@@ -24,68 +24,8 @@
 
 var oc_examples = {}
 
-oc_examples.data = {'labels': ["Category A", "Category B", "Category C"],
-                    'values': [20, 50, 30]};
-
-oc_examples.data2 = {'labels': ["Category A", "Category B", "Category C"],
-                    'values': [50, 30, 90]};
+oc_examples.data = [{"label":"Category A", "value":20},
+                    {"label":"Category B", "value":50}, 
+                    {"label":"Category C", "value":30}];
 
 opencharts.select("#hola").pie().data(oc_examples.data).create();
-
-
-/*
-console.log('-- basic tests --');
-
-var listen = function () {
-
-var observer = new ArrayObserver(oc_examples.data.labels);
-observer.open(function(splices) {
-  // respond to changes to the elements of arr.
-    splices.forEach(function(splice) {
-	    console.log("something change");
-        console.log(splice.index); // the index position that the change occurred.
-        console.log(splice.removed); // an array of values representing the sequence of removed elements
-        console.log(splice.addedCount); // the number of elements which were inserted.
-        opencharts.select("#hola").data(oc_examples.data).pie().create();
-    });
-});
-
-
-var observer = new ArrayObserver(oc_examples.data.values);
-observer.open(function(splices) {
-  // respond to changes to the elements of arr.
-    splices.forEach(function(splice) {
-      console.log("something change");
-        console.log(splice.index); // the index position that the change occurred.
-        console.log(splice.removed); // an array of values representing the sequence of removed elements
-        console.log(splice.addedCount); // the number of elements which were inserted.
-        opencharts.select("#hola").data(oc_examples.data).pie().create();
-    });
-});
-
-setTimeout(function(){ 
-    oc_examples.data.values.push(40);
-    oc_examples.data.labels.push("Hola");
-    oc_examples.data.values.push(40);
-    oc_examples.data.labels.push("Hola");
-    oc_examples.data.values.push(40);
-    oc_examples.data.labels.push("Hola");
-    oc_examples.data.values.push(40);
-    oc_examples.data.labels.push("Hola");
-    oc_examples.data.values.push(40);
-    oc_examples.data.labels.push("Hola");
-    console.log(oc_examples.data);
-    console.log("finished");
-}, 3000);
-};
-
-function check() {
-    setTimeout(function(){ 
-        console.log("fired");
-        Platform.performMicrotaskCheckpoint();
-        check();
-    }, 1000);  
-}
-check();
-listen();
-*/

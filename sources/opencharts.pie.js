@@ -53,8 +53,6 @@ opencharts.pie().create = function(){
 
     
     var data = this._data;
-    var values = data.values;
-    var labels = data.labels;
     var w = 400;
     var h = 400;
     var r = h/2;
@@ -87,11 +85,8 @@ opencharts.pie().create = function(){
     };
 
 
-
-    var vis = d3.select(this._selector).append("svg:svg").data([values]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
-    var pie = d3.layout.pie().value(function(d){
-        return d;
-    });
+    var vis = d3.select(this._selector).append("svg:svg").data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
+    var pie = d3.layout.pie().value(function(d){return d.value;});
 
     // declare an arc generator function
     var arc = d3.svg.arc().outerRadius(r);
@@ -115,7 +110,7 @@ opencharts.pie().create = function(){
                 d.innerRadius = 0;
                 d.outerRadius = r;
         return "translate(" + arc.centroid(d) + ")";}).attr("text-anchor", "middle").text( function(d, i) {
-            return labels[i];
+            return data[i].label;
         }
     );
 
