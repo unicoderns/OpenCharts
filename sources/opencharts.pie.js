@@ -65,22 +65,18 @@ opencharts.pie().create = function(){
         var _arc = d3.select(this);
         var _indexValue = _arc.attr("index_value");
 
-        var _arcSelector = "." + "pie-" + pieName + "-arc-" + _indexValue;
-        d3.selectAll(_arcSelector).style("fill", "#1f949f");
+        var _arcSelector = "." + "pie-outer-" + pieName + "-arc-index-" + _indexValue;
+        d3.selectAll(_arcSelector).style("fill", color(_indexValue));
     };
 
     var synchronizedMouseOut = function() {
 
         var _arc = d3.select(this);
         var _indexValue = _arc.attr("index_value");
-        console.log("." + "pie-" + pieName + "-arc-" + _indexValue);
-        console.log(_indexValue);
-        console.log(this);
 
-        var _arcSelector = "." + "pie-" + pieName + "-arc-" + _indexValue;
+        var _arcSelector = "." + "pie-outer-" + pieName + "-arc-index-" + _indexValue;
         var _selectedArc = d3.selectAll(_arcSelector);
-        var _colorValue = _selectedArc.attr("color_value");
-        _selectedArc.style("fill", _colorValue);
+        _selectedArc.style("fill", "#ffffff");
 
     };
 
@@ -93,25 +89,31 @@ opencharts.pie().create = function(){
                 .classed("svg-content-responsive", true)
                 .data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
 
-//    var vis = d3.select(this._selector).append("svg:svg").data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
-//    vis.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox", "0 0 400 400");
     var pie = d3.layout.pie().value(function(d){return d.value;});
 
     // declare an arc generator function
-    var arc = d3.svg.arc().outerRadius(r);
+    var arc = d3.svg.arc().outerRadius(r - 10);
+    var outArc = d3.svg.arc().innerRadius(r).outerRadius(r - 6);
 
     // select paths, use arc generator to draw
     var arcs = vis.selectAll("g.slice").data(pie).enter().append("svg:g").attr("class", "slice");
-    arcs.attr("index_value", function(d, i) { return "index-" + i; });
+    arcs.attr("index_value", function(d, i) { return i; });
     arcs.append("svg:path")
         .attr("class", function(d, i) { return "pie-" + pieName + "-arc-index-" + i; })
-        .attr("color_value", function(d, i) { return color(i); }) // Bar fill color...
         .attr("fill", function(d, i){
             return color(i);
         })
         .attr("d", function (d) {
             // log the result of the arc generator to show how cool it is :)
             return arc(d);
+        });
+
+    arcs.append("svg:path")
+        .attr("class", function(d, i) { return "pie-outer-arc pie-outer-" + pieName + "-arc-index-" + i; })
+        .attr("fill", "#ffffff")
+        .attr("d", function (d) {
+            // log the result of the arc generator to show how cool it is :)
+            return outArc(d);
         });
 
     // add the text
