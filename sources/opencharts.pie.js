@@ -84,8 +84,17 @@ opencharts.pie().create = function(){
 
     };
 
+    var vis = d3.select(this._selector)
+                .append("svg")
+                //responsive SVG needs these 2 attributes and no width and height attr
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .attr("viewBox", "0 0 " + w + " " + h )
+                //class to make it responsive
+                .classed("svg-content-responsive", true)
+                .data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
 
-    var vis = d3.select(this._selector).append("svg:svg").data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
+//    var vis = d3.select(this._selector).append("svg:svg").data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
+//    vis.attr("preserveAspectRatio", "xMinYMin meet").attr("viewBox", "0 0 400 400");
     var pie = d3.layout.pie().value(function(d){return d.value;});
 
     // declare an arc generator function
