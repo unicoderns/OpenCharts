@@ -22,83 +22,69 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-
 //------------------------------------------------------------------------------------------
-// Main Object, everything it's contained here
+// Set type of chart
 //------------------------------------------------------------------------------------------
-var opencharts = {
-    _selector: "",
-    _data: "",
-    _type: "",
-    _charts: {}, // Settings for each chart
-};
-
-//------------------------------------------------------------------------------------------
-// Select the chart
-//------------------------------------------------------------------------------------------
-opencharts.select =  function(selector){
+opencharts.bar = function() {
     "use strict";
 
-    this._selector = selector;
+    this._type = "bar";
     return this;
 };
 
 //------------------------------------------------------------------------------------------
-// Print the current object
+// Set the data for the current bar chart
 //------------------------------------------------------------------------------------------
-opencharts.print =  function(){
+opencharts.bar().data =  function(data) {
     "use strict";
 
-    console.log(this);
+    this._data = data;
+    // Data consistency test missing
     return this;
 };
 
 //------------------------------------------------------------------------------------------
-// Init
+// Create bar chart
 //------------------------------------------------------------------------------------------
-opencharts._init = function() {
+opencharts.bar().create = function() {
     "use strict";
 
-};
+    console.log("creating");
 
-//------------------------------------------------------------------------------------------
-// Getting data object from DOM using d3 (custom tags)
-//------------------------------------------------------------------------------------------
-opencharts._getData = function(selector) {
-    "use strict";
+    var data = this._data;
+    var dataLength = data.length;
+    var w = 400;
+    var h = 100;
+    var barPadding = 1; 
+    var color = d3.scale.category20c();
 
-    var dataString = d3.select(selector)[0][0].dataset.object;
-    var dataArray = dataString.split(".");
-    var data;
-    
-    dataArray.forEach(function(key) { // Getting data object
-        if (!data) {
-            data = window[key];
-        } else {
-            data = data[key];
-        }
-    });
+    var chartName = this._selector.replace("#", "");    
 
-    return data;
-};
+    var svg = d3.select(this._selector)
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h)
+        //responsive SVG needs these 2 attributes and no width and height attr
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 " + w + " " + h )
+        //class to make it responsive
+        .classed("svg-content-responsive", true);
 
-//------------------------------------------------------------------------------------------
-// On page load create custom-tags elements
-//------------------------------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", function() {
-    "use strict";
-
-    var pieElements = d3.selectAll("opencharts-pie");
-    pieElements = pieElements[0];
-
-    if (pieElements.length) {
-
-        pieElements.forEach(function(key) { // Creating charts
-            var id = key.id;
-            var selector = "#" + id;
-            var data = opencharts._getData(selector);
-
-            opencharts.select(selector).pie().data(data).create(); // Create pie
+    svg.selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("fill", "teal")
+        .attr("x", function(d, i) {
+            return i * (w / dataLength);
+        })
+        .attr("y", function(d) {
+            return h - d * 4;  //Height minus data value
+        })
+        .attr("width", w / dataLength - barPadding)
+        .attr("height", function(d) {
+            return d * 4;
         });
-    }
-});
+
+    return this;
+};

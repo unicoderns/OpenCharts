@@ -25,7 +25,7 @@
 //------------------------------------------------------------------------------------------
 // Set type of chart
 //------------------------------------------------------------------------------------------
-opencharts.pie = function(){
+opencharts.pie = function() {
     "use strict";
 
     this._type = "pie";
@@ -35,7 +35,7 @@ opencharts.pie = function(){
 //------------------------------------------------------------------------------------------
 // Set the data for the current pie chart
 //------------------------------------------------------------------------------------------
-opencharts.pie().data =  function(data){
+opencharts.pie().data =  function(data) {
     "use strict";
 
     this._data = data;
@@ -46,7 +46,7 @@ opencharts.pie().data =  function(data){
 //------------------------------------------------------------------------------------------
 // Create pie chart
 //------------------------------------------------------------------------------------------
-opencharts.pie().create = function(){
+opencharts.pie().create = function() {
     "use strict";
 
     console.log("creating");
@@ -127,7 +127,6 @@ opencharts.pie().create = function(){
 
     arcs.on('mouseover', synchronizedMouseOver)
         .on("mouseout", synchronizedMouseOut);
-
 
     return this;
 };
