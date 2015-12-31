@@ -22,111 +22,121 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------------------------
-// Set type of chart
-//------------------------------------------------------------------------------------------
-opencharts.pie = function() {
+
+(function(){
     "use strict";
 
-    this._type = "pie";
-    return this;
-};
+    // pie component
+    var pie = {};
 
-//------------------------------------------------------------------------------------------
-// Set the data for the current pie chart
-//------------------------------------------------------------------------------------------
-opencharts.pie().data =  function(data) {
-    "use strict";
+    //------------------------------------------------------------------------------------------
+    // Set the data for the current pie chart
+    //------------------------------------------------------------------------------------------
+    pie.data = function(data) {
+        "use strict";
 
-    this._data = data;
-    // Data consistency test missing
-    return this;
-};
-
-//------------------------------------------------------------------------------------------
-// Create pie chart
-//------------------------------------------------------------------------------------------
-opencharts.pie().create = function() {
-    "use strict";
-
-    console.log("creating");
-
-    
-    var data = this._data;
-    var w = 400;
-    var h = 400;
-    var r = h/2;
-    var color = d3.scale.category20c();
-
-    var pieName = this._selector.replace("#", "");    
-
-    // Effects
-    var synchronizedMouseOver = function() {
-        var _arc = d3.select(this);
-        var _indexValue = _arc.attr("index_value");
-
-        var _arcSelector = "." + "pie-outer-" + pieName + "-arc-index-" + _indexValue;
-        d3.selectAll(_arcSelector).style("fill", color(_indexValue));
+        this.parent._data = data;
+        // Data consistency test missing
+        return this;
     };
 
-    var synchronizedMouseOut = function() {
+    //------------------------------------------------------------------------------------------
+    // Create pie chart
+    //------------------------------------------------------------------------------------------
+    pie.create = function() {
+        "use strict";
 
-        var _arc = d3.select(this);
-        var _indexValue = _arc.attr("index_value");
+        console.log("creating");
 
-        var _arcSelector = "." + "pie-outer-" + pieName + "-arc-index-" + _indexValue;
-        var _selectedArc = d3.selectAll(_arcSelector);
-        _selectedArc.style("fill", "#ffffff");
+        var data = this.parent._data;
+        var w = 400;
+        var h = 400;
+        var r = h/2;
+        var color = d3.scale.category20c();
 
+        var chartSelector = this.parent._selector;    
+        var chartName = chartSelector.replace("#", "");    
+
+        // Effects
+        var synchronizedMouseOver = function() {
+            var _arc = d3.select(this);
+            var _indexValue = _arc.attr("index_value");
+
+            var _arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + _indexValue;
+            d3.selectAll(_arcSelector).style("fill", color(_indexValue));
+        };
+
+        var synchronizedMouseOut = function() {
+
+            var _arc = d3.select(this);
+            var _indexValue = _arc.attr("index_value");
+
+            var _arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + _indexValue;
+            var _selectedArc = d3.selectAll(_arcSelector);
+            _selectedArc.style("fill", "#ffffff");
+
+        };
+
+        var vis = d3.select(chartSelector)
+                    .append("svg")
+                    //responsive SVG needs these 2 attributes and no width and height attr
+                    .attr("preserveAspectRatio", "xMinYMin meet")
+                    .attr("viewBox", "0 0 " + w + " " + h )
+                    //class to make it responsive
+                    .classed("svg-content-responsive", true)
+                    .data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
+
+        var pie = d3.layout.pie().value(function(d){return d.value;});
+
+        // declare an arc generator function
+        var arc = d3.svg.arc().outerRadius(r - 10);
+        var outArc = d3.svg.arc().innerRadius(r).outerRadius(r - 6);
+
+        // select paths, use arc generator to draw
+        var arcs = vis.selectAll("g.slice").data(pie).enter().append("svg:g").attr("class", "slice");
+        arcs.attr("index_value", function(d, i) { return i; });
+        arcs.append("svg:path")
+            .attr("class", function(d, i) { return "pie-" + chartName + "-arc-index-" + i; })
+            .attr("fill", function(d, i){
+                return color(i);
+            })
+            .attr("d", function (d) {
+                // log the result of the arc generator to show how cool it is :)
+                return arc(d);
+            });
+
+        arcs.append("svg:path")
+            .attr("class", function(d, i) { return "pie-outer-arc pie-outer-" + chartName + "-arc-index-" + i; })
+            .attr("fill", "#ffffff")
+            .attr("d", function (d) {
+                // log the result of the arc generator to show how cool it is :)
+                return outArc(d);
+            });
+
+        // add the text
+        arcs.append("svg:text").attr("transform", function(d){
+                    d.innerRadius = 0;
+                    d.outerRadius = r;
+            return "translate(" + arc.centroid(d) + ")";}).attr("text-anchor", "middle").text( function(d, i) {
+                return data[i].label;
+            }
+        );
+
+        arcs.on('mouseover', synchronizedMouseOver)
+            .on("mouseout", synchronizedMouseOut);
+
+        return true;
     };
 
-    var vis = d3.select(this._selector)
-                .append("svg")
-                //responsive SVG needs these 2 attributes and no width and height attr
-                .attr("preserveAspectRatio", "xMinYMin meet")
-                .attr("viewBox", "0 0 " + w + " " + h )
-                //class to make it responsive
-                .classed("svg-content-responsive", true)
-                .data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
 
-    var pie = d3.layout.pie().value(function(d){return d.value;});
+    //------------------------------------------------------------------------------------------
+    // Set type of chart
+    //------------------------------------------------------------------------------------------
+    opencharts.pie = function() {
 
-    // declare an arc generator function
-    var arc = d3.svg.arc().outerRadius(r - 10);
-    var outArc = d3.svg.arc().innerRadius(r).outerRadius(r - 6);
+        this._type = "pie";
+        pie.parent = this;
 
-    // select paths, use arc generator to draw
-    var arcs = vis.selectAll("g.slice").data(pie).enter().append("svg:g").attr("class", "slice");
-    arcs.attr("index_value", function(d, i) { return i; });
-    arcs.append("svg:path")
-        .attr("class", function(d, i) { return "pie-" + pieName + "-arc-index-" + i; })
-        .attr("fill", function(d, i){
-            return color(i);
-        })
-        .attr("d", function (d) {
-            // log the result of the arc generator to show how cool it is :)
-            return arc(d);
-        });
-
-    arcs.append("svg:path")
-        .attr("class", function(d, i) { return "pie-outer-arc pie-outer-" + pieName + "-arc-index-" + i; })
-        .attr("fill", "#ffffff")
-        .attr("d", function (d) {
-            // log the result of the arc generator to show how cool it is :)
-            return outArc(d);
-        });
-
-    // add the text
-    arcs.append("svg:text").attr("transform", function(d){
-                d.innerRadius = 0;
-                d.outerRadius = r;
-        return "translate(" + arc.centroid(d) + ")";}).attr("text-anchor", "middle").text( function(d, i) {
-            return data[i].label;
-        }
-    );
-
-    arcs.on('mouseover', synchronizedMouseOver)
-        .on("mouseout", synchronizedMouseOut);
-
-    return this;
-};
+        return pie;
+    };    
+})();

@@ -22,69 +22,80 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------------------------
-// Set type of chart
-//------------------------------------------------------------------------------------------
-opencharts.bar = function() {
+
+(function(){
     "use strict";
 
-    this._type = "bar";
-    return this;
-};
+    // bar component
+    var bar = {};
 
-//------------------------------------------------------------------------------------------
-// Set the data for the current bar chart
-//------------------------------------------------------------------------------------------
-opencharts.bar().data =  function(data) {
-    "use strict";
+    //------------------------------------------------------------------------------------------
+    // Set the data for the current bar chart
+    //------------------------------------------------------------------------------------------
+    bar.data =  function(data) {
+        "use strict";
 
-    this._data = data;
-    // Data consistency test missing
-    return this;
-};
+        this.parent._data = data;
+        // Data consistency test missing
+        return this;
+    };
 
-//------------------------------------------------------------------------------------------
-// Create bar chart
-//------------------------------------------------------------------------------------------
-opencharts.bar().create = function() {
-    "use strict";
+    //------------------------------------------------------------------------------------------
+    // Create bar chart
+    //------------------------------------------------------------------------------------------
+    bar.create = function() {
+        "use strict";
 
-    console.log("creating");
+        console.log("creating");
 
-    var data = this._data;
-    var dataLength = data.length;
-    var w = 400;
-    var h = 100;
-    var barPadding = 1; 
-    var color = d3.scale.category20c();
+        var data = this.parent._data;
+        var dataLength = data.length;
+        var w = 400;
+        var h = 100;
+        var barPadding = 1; 
+        var color = d3.scale.category20c();
 
-    var chartName = this._selector.replace("#", "");    
+        var chartSelector = this.parent._selector;    
+        var chartName = chartSelector.replace("#", "");    
 
-    var svg = d3.select(this._selector)
-        .append("svg")
-        .attr("width", w)
-        .attr("height", h)
-        //responsive SVG needs these 2 attributes and no width and height attr
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 " + w + " " + h )
-        //class to make it responsive
-        .classed("svg-content-responsive", true);
+        var svg = d3.select(chartSelector)
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h)
+            //responsive SVG needs these 2 attributes and no width and height attr
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .attr("viewBox", "0 0 " + w + " " + h )
+            //class to make it responsive
+            .classed("svg-content-responsive", true);
 
-    svg.selectAll("rect")
-        .data(data)
-        .enter()
-        .append("rect")
-        .attr("fill", "teal")
-        .attr("x", function(d, i) {
-            return i * (w / dataLength);
-        })
-        .attr("y", function(d) {
-            return h - d * 4;  //Height minus data value
-        })
-        .attr("width", w / dataLength - barPadding)
-        .attr("height", function(d) {
-            return d * 4;
-        });
+        svg.selectAll("rect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("fill", "teal")
+            .attr("x", function(d, i) {
+                return i * (w / dataLength);
+            })
+            .attr("y", function(d) {
+                return h - d * 4;  //Height minus data value
+            })
+            .attr("width", w / dataLength - barPadding)
+            .attr("height", function(d) {
+                return d * 4;
+            });
 
-    return this;
-};
+        return true;
+    };
+
+
+    //------------------------------------------------------------------------------------------
+    // Set type of chart
+    //------------------------------------------------------------------------------------------
+    opencharts.bar = function() {
+
+        this._type = "bar";
+        bar.parent = this;
+
+        return bar;
+    };
+})();

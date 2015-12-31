@@ -22,65 +22,71 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-
-//------------------------------------------------------------------------------------------
-// Main Object, everything it's contained here
-//------------------------------------------------------------------------------------------
-var opencharts = {
-    _selector: "",
-    _data: "",
-    _type: "",
-    _charts: {}, // Settings for each chart
-};
-
-//------------------------------------------------------------------------------------------
-// Select the chart
-//------------------------------------------------------------------------------------------
-opencharts.select =  function(selector){
+(function(){
     "use strict";
 
-    this._selector = selector;
-    return this;
-};
+    //------------------------------------------------------------------------------------------
+    // Main Object, everything it's contained here
+    //------------------------------------------------------------------------------------------
+    var opencharts = {
+        _selector: "",
+        _data: "",
+        _type: "",
+        _charts: {}, // Settings for each chart
+    };
 
-//------------------------------------------------------------------------------------------
-// Print the current object
-//------------------------------------------------------------------------------------------
-opencharts.print =  function(){
-    "use strict";
+    //------------------------------------------------------------------------------------------
+    // Select the chart
+    //------------------------------------------------------------------------------------------
+    opencharts.select =  function(selector){
+        "use strict";
 
-    console.log(this);
-    return this;
-};
+        this._selector = selector;
+        return this;
+    };
 
-//------------------------------------------------------------------------------------------
-// Init
-//------------------------------------------------------------------------------------------
-opencharts._init = function() {
-    "use strict";
+    //------------------------------------------------------------------------------------------
+    // Print the current object
+    //------------------------------------------------------------------------------------------
+    opencharts.print =  function(){
+        "use strict";
 
-};
+        console.log(this);
+        return this;
+    };
 
-//------------------------------------------------------------------------------------------
-// Getting data object from DOM using d3 (custom tags)
-//------------------------------------------------------------------------------------------
-opencharts._getData = function(selector) {
-    "use strict";
+    //------------------------------------------------------------------------------------------
+    // Init
+    //------------------------------------------------------------------------------------------
+    opencharts._init = function() {
+        "use strict";
 
-    var dataString = d3.select(selector)[0][0].dataset.object;
-    var dataArray = dataString.split(".");
-    var data;
-    
-    dataArray.forEach(function(key) { // Getting data object
-        if (!data) {
-            data = window[key];
-        } else {
-            data = data[key];
-        }
-    });
+    };
 
-    return data;
-};
+    //------------------------------------------------------------------------------------------
+    // Getting data object from DOM using d3 (custom tags)
+    //------------------------------------------------------------------------------------------
+    opencharts._getData = function(selector) {
+        "use strict";
+
+        var dataString = d3.select(selector)[0][0].dataset.object;
+        var dataArray = dataString.split(".");
+        var data;
+        
+        dataArray.forEach(function(key) { // Getting data object
+            if (!data) {
+                data = window[key];
+            } else {
+                data = data[key];
+            }
+        });
+
+        return data;
+    };
+ 
+    // Making opencharts var public
+    window.opencharts = opencharts;
+})();
 
 //------------------------------------------------------------------------------------------
 // On page load create custom-tags elements
