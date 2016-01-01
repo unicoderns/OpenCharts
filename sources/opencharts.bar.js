@@ -61,8 +61,6 @@
 
         var svg = this.parent.utils.createSVG(chartSelector, w, h);
 
-        console.log(data);
-
         // Data scale
         var xScale = d3.time.scale()
             .domain([

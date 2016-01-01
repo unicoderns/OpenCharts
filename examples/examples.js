@@ -26,9 +26,9 @@ var oc_examples = {}
 
 oc_examples.now = 1451580978;
 
-oc_examples.data = [{"label":"Category A", "value":20},
-{"label":"Category B", "value":50}, 
-{"label":"Category C", "value":30}];
+oc_examples.data = [{"label": "Category A", "value": 20, "color": "#9b3388"},
+                    {"label": "Category B", "value": 50, "color": "#4f99fc"}, 
+                    {"label": "Category C", "value": 30, "color": "#fe8a4d"}];
 
 opencharts.select("#hola").pie().data(oc_examples.data).create();
 

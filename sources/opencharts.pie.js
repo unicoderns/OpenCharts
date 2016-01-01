@@ -48,28 +48,29 @@
         var w = 400;
         var h = 400;
         var r = Math.min(w, h) / 2;
-        var color = d3.scale.category20c();
+        var defaultColor = d3.scale.category20c();
 
         var chartSelector = this.parent._selector;    
         var chartName = chartSelector.replace("#", "");    
 
         // Effects
         var synchronizedMouseOver = function() {
-            var _arc = d3.select(this);
-            var _indexValue = _arc.attr("index_value");
+            var arc = d3.select(this);
+            var index = arc.attr("index");
+            var color = arc.attr("color");
 
-            var _arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + _indexValue;
-            d3.selectAll(_arcSelector).style("fill", color(_indexValue));
+            var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
+            d3.selectAll(arcSelector).style("fill", color);
         };
 
         var synchronizedMouseOut = function() {
 
-            var _arc = d3.select(this);
-            var _indexValue = _arc.attr("index_value");
+            var arc = d3.select(this);
+            var index = arc.attr("index");
 
-            var _arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + _indexValue;
-            var _selectedArc = d3.selectAll(_arcSelector);
-            _selectedArc.style("fill", "#ffffff");
+            var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
+            var selectedArc = d3.selectAll(arcSelector);
+            selectedArc.style("fill", "#ffffff");
 
         };
 
@@ -86,7 +87,10 @@
             .enter().append("g")
             .classed("arc", true)
             .attr("transform", "translate(" + r + "," + r + ")")
-            .attr("index_value", function(d, i) { return i; });
+            .attr("index", function(d, i) { return i; })
+            .attr("color", function(d, i) {
+                return data[i].color || defaultColor(i);
+            });
             
         g.append("path")
             .attr("d", arc)
@@ -94,7 +98,7 @@
                 return "pie-" + chartName + "-arc-index-" + i; /////********
             })
             .attr("fill", function(d, i){
-                return color(i);
+                return data[i].color || defaultColor(i);
             })
             .attr("d", function (d) {
                 return arc(d);
