@@ -42,8 +42,11 @@
     // Create bar chart
     //------------------------------------------------------------------------------------------
     bar.create = function() {
+        var core = this.parent;
+        var utils = core.utils;
+
         // Configuration vars
-        var data = this.parent.data;
+        var data = core.data[0];
         var values = data.values;
         var valuesLength = values.length;
 
@@ -54,14 +57,12 @@
         var chartH = h - (margin.top + margin.bottom);
         var gap = 2; 
 
-        var defaultColor = d3.scale.category20c();
-
         var barWidth = (chartW / valuesLength) - gap;
 
-        var chartSelector = this.parent.selector;    
+        var chartSelector = core.selector;    
         var chartName = chartSelector.replace("#", "");
 
-        var svg = this.parent.utils.createSVG(chartSelector, w, h);
+        var svg = utils.createSVG(w, h);
 
         // Data scale
         var xScale = d3.time.scale()
@@ -96,7 +97,7 @@
             .enter()
             .append("rect")
             .attr("fill", function(d, i){
-                return data.color || defaultColor(0);
+                return utils.getColor(0);
             })
             .attr("x", function(d, i) {
                 return gap + i * (barWidth + gap) + margin.left;

@@ -36,6 +36,11 @@
         selector: "",
         data: "",
         type: "",
+        settings: {
+            default: {
+                colors: d3.scale.category20c()
+            }
+        },
         charts: {}, // Settings for each chart
     };
 
@@ -79,27 +84,6 @@
 
         return data;
     };
-
-
-    //==========================================================================================
-    // Chart utils
-    //==========================================================================================
-
-    opencharts.utils = {};
-
-    //------------------------------------------------------------------------------------------
-    // Creating SVG image
-    //------------------------------------------------------------------------------------------
-    opencharts.utils.createSVG = function(selector, width, height) {
-        return d3.select(selector)
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .attr("preserveAspectRatio", "xMinYMin meet")
-            .attr("viewBox", "0 0 " + width + " " + height )
-            .classed("svg-content-responsive", true);        
-    };
- 
     // Making opencharts var public
     window.opencharts = opencharts;
 })();

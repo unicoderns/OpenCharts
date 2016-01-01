@@ -22,27 +22,36 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-var oc_examples = {}
 
-oc_examples.now = 1451580978;
+(function(){
+    "use strict";
 
-oc_examples.data = [{"label": "Category A", "value": 20, "color": "#9b3388"},
-                    {"label": "Category B", "value": 50, "color": "#4f99fc"}, 
-                    {"label": "Category C", "value": 30, "color": "#fe8a4d"}];
+    //==========================================================================================
+    // Chart utils
+    //==========================================================================================
+    var utils = {};
+    var core = opencharts;
 
-opencharts.select("#hola").pie().data(oc_examples.data).create();
+    //------------------------------------------------------------------------------------------
+    // Creating SVG image
+    //------------------------------------------------------------------------------------------
+    utils.createSVG = function(width, height) {
+        return d3.select(core.selector)
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .attr("viewBox", "0 0 " + width + " " + height )
+            .classed("svg-content-responsive", true);        
+    };
 
-oc_examples.data2 = [{
-    title: "Default data",
-    color: "#9b3388",
-    values: []
-}];
+    //------------------------------------------------------------------------------------------
+    // Creating SVG image
+    //------------------------------------------------------------------------------------------
+    utils.getColor = function(i) {
+        return core.data[i].color || settings.default.colors(i);
+    };
 
-for (i = 0; i < 20; i++) { 
-    oc_examples.data2[0].values.push({
-        label: oc_examples.now + (i * 86400),
-        value: Math.random() * 100
-    });
-}
+    core.utils = utils;
 
-opencharts.select("#hola2").bar().data(oc_examples.data2).create();
+})();

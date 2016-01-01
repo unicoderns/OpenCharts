@@ -42,15 +42,15 @@
     // Create pie chart
     //------------------------------------------------------------------------------------------
     pie.create = function() {
-        console.log("creating");
+        var core = this.parent;
+        var utils = core.utils;
 
-        var data = this.parent.data;
+        var data = core.data;
         var w = 400;
         var h = 400;
         var r = Math.min(w, h) / 2;
-        var defaultColor = d3.scale.category20c();
 
-        var chartSelector = this.parent.selector;    
+        var chartSelector = core.selector;    
         var chartName = chartSelector.replace("#", "");    
 
         // Effects
@@ -74,7 +74,7 @@
 
         };
 
-        var svg = this.parent.utils.createSVG(chartSelector, w, h);
+        var svg = utils.createSVG(w, h);
 
         var pie = d3.layout.pie().value(function(d){return d.value;});
 
@@ -89,7 +89,7 @@
             .attr("transform", "translate(" + r + "," + r + ")")
             .attr("index", function(d, i) { return i; })
             .attr("color", function(d, i) {
-                return data[i].color || defaultColor(i);
+                return utils.getColor(i);
             });
             
         g.append("path")
@@ -98,7 +98,7 @@
                 return "pie-" + chartName + "-arc-index-" + i; /////********
             })
             .attr("fill", function(d, i){
-                return data[i].color || defaultColor(i);
+                return utils.getColor(i);
             })
             .attr("d", function (d) {
                 return arc(d);

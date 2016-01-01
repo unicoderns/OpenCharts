@@ -36,6 +36,11 @@
         selector: "",
         data: "",
         type: "",
+        settings: {
+            default: {
+                colors: d3.scale.category20c()
+            }
+        },
         charts: {}, // Settings for each chart
     };
 
@@ -79,27 +84,6 @@
 
         return data;
     };
-
-
-    //==========================================================================================
-    // Chart utils
-    //==========================================================================================
-
-    opencharts.utils = {};
-
-    //------------------------------------------------------------------------------------------
-    // Creating SVG image
-    //------------------------------------------------------------------------------------------
-    opencharts.utils.createSVG = function(selector, width, height) {
-        return d3.select(selector)
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .attr("preserveAspectRatio", "xMinYMin meet")
-            .attr("viewBox", "0 0 " + width + " " + height )
-            .classed("svg-content-responsive", true);        
-    };
- 
     // Making opencharts var public
     window.opencharts = opencharts;
 })();
@@ -168,15 +152,15 @@ document.addEventListener("DOMContentLoaded", function() {
     // Create pie chart
     //------------------------------------------------------------------------------------------
     pie.create = function() {
-        console.log("creating");
+        var core = this.parent;
+        var utils = core.utils;
 
-        var data = this.parent.data;
+        var data = core.data;
         var w = 400;
         var h = 400;
         var r = Math.min(w, h) / 2;
-        var defaultColor = d3.scale.category20c();
 
-        var chartSelector = this.parent.selector;    
+        var chartSelector = core.selector;    
         var chartName = chartSelector.replace("#", "");    
 
         // Effects
@@ -200,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         };
 
-        var svg = this.parent.utils.createSVG(chartSelector, w, h);
+        var svg = utils.createSVG(w, h);
 
         var pie = d3.layout.pie().value(function(d){return d.value;});
 
@@ -215,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function() {
             .attr("transform", "translate(" + r + "," + r + ")")
             .attr("index", function(d, i) { return i; })
             .attr("color", function(d, i) {
-                return data[i].color || defaultColor(i);
+                return utils.getColor(i);
             });
             
         g.append("path")
@@ -224,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 return "pie-" + chartName + "-arc-index-" + i; /////********
             })
             .attr("fill", function(d, i){
-                return data[i].color || defaultColor(i);
+                return utils.getColor(i);
             })
             .attr("d", function (d) {
                 return arc(d);
