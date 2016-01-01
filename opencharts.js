@@ -33,17 +33,17 @@
     // Main Object, everything it's contained here
     //------------------------------------------------------------------------------------------
     var opencharts = {
-        _selector: "",
-        _data: "",
-        _type: "",
-        _charts: {}, // Settings for each chart
+        selector: "",
+        data: "",
+        type: "",
+        charts: {}, // Settings for each chart
     };
 
     //------------------------------------------------------------------------------------------
     // Select the chart
     //------------------------------------------------------------------------------------------
     opencharts.select =  function(selector){
-        this._selector = selector;
+        this.selector = selector;
         return this;
     };
 
@@ -86,7 +86,6 @@
     //==========================================================================================
 
     opencharts.utils = {};
-
 
     //------------------------------------------------------------------------------------------
     // Creating SVG image
@@ -160,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Set the data for the current pie chart
     //------------------------------------------------------------------------------------------
     pie.data = function(data) {
-        this.parent._data = data;
+        this.parent.data = data;
         // Data consistency test missing
         return this;
     };
@@ -171,13 +170,13 @@ document.addEventListener("DOMContentLoaded", function() {
     pie.create = function() {
         console.log("creating");
 
-        var data = this.parent._data;
+        var data = this.parent.data;
         var w = 400;
         var h = 400;
         var r = Math.min(w, h) / 2;
         var defaultColor = d3.scale.category20c();
 
-        var chartSelector = this.parent._selector;    
+        var chartSelector = this.parent.selector;    
         var chartName = chartSelector.replace("#", "");    
 
         // Effects
@@ -264,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Set type of chart
     //------------------------------------------------------------------------------------------
     opencharts.pie = function() {
-        this._type = "pie";
+        this.type = "pie";
         pie.parent = this;
 
         return pie;

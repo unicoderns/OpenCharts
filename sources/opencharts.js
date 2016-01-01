@@ -33,17 +33,17 @@
     // Main Object, everything it's contained here
     //------------------------------------------------------------------------------------------
     var opencharts = {
-        _selector: "",
-        _data: "",
-        _type: "",
-        _charts: {}, // Settings for each chart
+        selector: "",
+        data: "",
+        type: "",
+        charts: {}, // Settings for each chart
     };
 
     //------------------------------------------------------------------------------------------
     // Select the chart
     //------------------------------------------------------------------------------------------
     opencharts.select =  function(selector){
-        this._selector = selector;
+        this.selector = selector;
         return this;
     };
 
@@ -86,7 +86,6 @@
     //==========================================================================================
 
     opencharts.utils = {};
-
 
     //------------------------------------------------------------------------------------------
     // Creating SVG image

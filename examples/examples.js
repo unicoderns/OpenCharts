@@ -32,10 +32,14 @@ oc_examples.data = [{"label": "Category A", "value": 20, "color": "#9b3388"},
 
 opencharts.select("#hola").pie().data(oc_examples.data).create();
 
-oc_examples.data2 = [];
+oc_examples.data2 = {
+    title: "Default data",
+    color: "#9b3388",
+    values: []
+};
 
 for (i = 0; i < 20; i++) { 
-    oc_examples.data2.push({
+    oc_examples.data2.values.push({
         label: oc_examples.now + (i * 86400),
         value: Math.random() * 100
     });

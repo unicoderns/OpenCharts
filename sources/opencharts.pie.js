@@ -33,7 +33,7 @@
     // Set the data for the current pie chart
     //------------------------------------------------------------------------------------------
     pie.data = function(data) {
-        this.parent._data = data;
+        this.parent.data = data;
         // Data consistency test missing
         return this;
     };
@@ -44,13 +44,13 @@
     pie.create = function() {
         console.log("creating");
 
-        var data = this.parent._data;
+        var data = this.parent.data;
         var w = 400;
         var h = 400;
         var r = Math.min(w, h) / 2;
         var defaultColor = d3.scale.category20c();
 
-        var chartSelector = this.parent._selector;    
+        var chartSelector = this.parent.selector;    
         var chartName = chartSelector.replace("#", "");    
 
         // Effects
@@ -137,7 +137,7 @@
     // Set type of chart
     //------------------------------------------------------------------------------------------
     opencharts.pie = function() {
-        this._type = "pie";
+        this.type = "pie";
         pie.parent = this;
 
         return pie;
