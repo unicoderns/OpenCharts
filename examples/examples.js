@@ -24,13 +24,21 @@
 
 var oc_examples = {}
 
+oc_examples.now = 1451580978;
+
 oc_examples.data = [{"label":"Category A", "value":20},
-                    {"label":"Category B", "value":50}, 
-                    {"label":"Category C", "value":30}];
+{"label":"Category B", "value":50}, 
+{"label":"Category C", "value":30}];
 
 opencharts.select("#hola").pie().data(oc_examples.data).create();
 
-oc_examples.data2 = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
-                11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+oc_examples.data2 = [];
+
+for (i = 0; i < 20; i++) { 
+    oc_examples.data2.push({
+        label: oc_examples.now + (i * 86400),
+        value: Math.random() * 100
+    });
+}
 
 opencharts.select("#hola2").bar().data(oc_examples.data2).create();

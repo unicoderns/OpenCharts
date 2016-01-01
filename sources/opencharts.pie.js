@@ -33,8 +33,6 @@
     // Set the data for the current pie chart
     //------------------------------------------------------------------------------------------
     pie.data = function(data) {
-        "use strict";
-
         this.parent._data = data;
         // Data consistency test missing
         return this;
@@ -44,14 +42,12 @@
     // Create pie chart
     //------------------------------------------------------------------------------------------
     pie.create = function() {
-        "use strict";
-
         console.log("creating");
 
         var data = this.parent._data;
         var w = 400;
         var h = 400;
-        var r = h/2;
+        var r = Math.min(w, h) / 2;
         var color = d3.scale.category20c();
 
         var chartSelector = this.parent._selector;    
@@ -77,14 +73,7 @@
 
         };
 
-        var vis = d3.select(chartSelector)
-                    .append("svg")
-                    //responsive SVG needs these 2 attributes and no width and height attr
-                    .attr("preserveAspectRatio", "xMinYMin meet")
-                    .attr("viewBox", "0 0 " + w + " " + h )
-                    //class to make it responsive
-                    .classed("svg-content-responsive", true)
-                    .data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
+        var svg = this.parent.utils.createSVG(chartSelector, w, h);
 
         var pie = d3.layout.pie().value(function(d){return d.value;});
 
@@ -92,37 +81,48 @@
         var arc = d3.svg.arc().outerRadius(r - 10);
         var outArc = d3.svg.arc().innerRadius(r).outerRadius(r - 6);
 
-        // select paths, use arc generator to draw
-        var arcs = vis.selectAll("g.slice").data(pie).enter().append("svg:g").attr("class", "slice");
-        arcs.attr("index_value", function(d, i) { return i; });
-        arcs.append("svg:path")
-            .attr("class", function(d, i) { return "pie-" + chartName + "-arc-index-" + i; })
+        var g = svg.selectAll(".arc")
+            .data(pie(data))
+            .enter().append("g")
+            .classed("arc", true)
+            .attr("transform", "translate(" + r + "," + r + ")")
+            .attr("index_value", function(d, i) { return i; });
+            
+        g.append("path")
+            .attr("d", arc)
+            .attr("class", function(d, i) { 
+                return "pie-" + chartName + "-arc-index-" + i; /////********
+            })
             .attr("fill", function(d, i){
                 return color(i);
             })
             .attr("d", function (d) {
-                // log the result of the arc generator to show how cool it is :)
                 return arc(d);
             });
 
-        arcs.append("svg:path")
-            .attr("class", function(d, i) { return "pie-outer-arc pie-outer-" + chartName + "-arc-index-" + i; })
+        g.append("path")
+            .attr("d", outArc)
+            .attr("class", function(d, i) { 
+                return "pie-outer-arc pie-outer-" + chartName + "-arc-index-" + i; 
+            })
             .attr("fill", "#ffffff")
             .attr("d", function (d) {
                 // log the result of the arc generator to show how cool it is :)
                 return outArc(d);
             });
 
-        // add the text
-        arcs.append("svg:text").attr("transform", function(d){
-                    d.innerRadius = 0;
-                    d.outerRadius = r;
-            return "translate(" + arc.centroid(d) + ")";}).attr("text-anchor", "middle").text( function(d, i) {
+        g.append("text")
+            .attr("transform", function(d){
+                d.innerRadius = 0;
+                d.outerRadius = r;
+                return "translate(" + arc.centroid(d) + ")";
+            })
+            .attr("text-anchor", "middle").text( function(d, i) {
                 return data[i].label;
             }
         );
 
-        arcs.on('mouseover', synchronizedMouseOver)
+        g.on('mouseover', synchronizedMouseOver)
             .on("mouseout", synchronizedMouseOut);
 
         return true;
@@ -133,7 +133,6 @@
     // Set type of chart
     //------------------------------------------------------------------------------------------
     opencharts.pie = function() {
-
         this._type = "pie";
         pie.parent = this;
 

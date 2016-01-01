@@ -14,3 +14,15 @@
     -o-transition: all 0.4s ease-in-out;
     transition: all 0.4s ease-in-out;
 }
+
+.svg-content-responsive .axis path,
+.svg-content-responsive .axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.svg-content-responsive .axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}

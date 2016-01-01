@@ -22,65 +22,88 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-
-//------------------------------------------------------------------------------------------
-// Main Object, everything it's contained here
-//------------------------------------------------------------------------------------------
-var opencharts = {
-    _selector: "",
-    _data: "",
-    _type: "",
-    _charts: {}, // Settings for each chart
-};
-
-//------------------------------------------------------------------------------------------
-// Select the chart
-//------------------------------------------------------------------------------------------
-opencharts.select =  function(selector){
+(function(){
     "use strict";
 
-    this._selector = selector;
-    return this;
-};
+    //==========================================================================================
+    // Public functions
+    //==========================================================================================
 
-//------------------------------------------------------------------------------------------
-// Print the current object
-//------------------------------------------------------------------------------------------
-opencharts.print =  function(){
-    "use strict";
+    //------------------------------------------------------------------------------------------
+    // Main Object, everything it's contained here
+    //------------------------------------------------------------------------------------------
+    var opencharts = {
+        _selector: "",
+        _data: "",
+        _type: "",
+        _charts: {}, // Settings for each chart
+    };
 
-    console.log(this);
-    return this;
-};
+    //------------------------------------------------------------------------------------------
+    // Select the chart
+    //------------------------------------------------------------------------------------------
+    opencharts.select =  function(selector){
+        this._selector = selector;
+        return this;
+    };
 
-//------------------------------------------------------------------------------------------
-// Init
-//------------------------------------------------------------------------------------------
-opencharts._init = function() {
-    "use strict";
+    //------------------------------------------------------------------------------------------
+    // Print the current object
+    //------------------------------------------------------------------------------------------
+    opencharts.print =  function(){
+        console.log(this);
+        return this;
+    };
 
-};
+    //------------------------------------------------------------------------------------------
+    // Init
+    //------------------------------------------------------------------------------------------
+    opencharts.init = function() {
+    };
 
-//------------------------------------------------------------------------------------------
-// Getting data object from DOM using d3 (custom tags)
-//------------------------------------------------------------------------------------------
-opencharts._getData = function(selector) {
-    "use strict";
+    //------------------------------------------------------------------------------------------
+    // Getting data object from DOM using d3 (custom tags)
+    //------------------------------------------------------------------------------------------
+    opencharts.getData = function(selector) {
+        var dataString = d3.select(selector)[0][0].dataset.object;
+        var dataArray = dataString.split(".");
+        var data;
+        
+        dataArray.forEach(function(key) { // Getting data object
+            if (!data) {
+                data = window[key];
+            } else {
+                data = data[key];
+            }
+        });
 
-    var dataString = d3.select(selector)[0][0].dataset.object;
-    var dataArray = dataString.split(".");
-    var data;
-    
-    dataArray.forEach(function(key) { // Getting data object
-        if (!data) {
-            data = window[key];
-        } else {
-            data = data[key];
-        }
-    });
+        return data;
+    };
 
-    return data;
-};
+
+    //==========================================================================================
+    // Chart utils
+    //==========================================================================================
+
+    opencharts.utils = {};
+
+
+    //------------------------------------------------------------------------------------------
+    // Creating SVG image
+    //------------------------------------------------------------------------------------------
+    opencharts.utils.createSVG = function(selector, width, height) {
+        return d3.select(selector)
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .attr("viewBox", "0 0 " + width + " " + height )
+            .classed("svg-content-responsive", true);        
+    };
+ 
+    // Making opencharts var public
+    window.opencharts = opencharts;
+})();
 
 //------------------------------------------------------------------------------------------
 // On page load create custom-tags elements
@@ -89,14 +112,18 @@ document.addEventListener("DOMContentLoaded", function() {
     "use strict";
 
     var pieElements = d3.selectAll("opencharts-pie");
+    pieElements = pieElements[0];
 
-    pieElements.forEach(function(key) { // Creating charts
-        var id = key[0].id;
-        var selector = "#" + id;
-        var data = opencharts._getData(selector);
+    if (pieElements.length) {
 
-        opencharts.select(selector).pie().data(data).create(); // Create pie
-    });
+        pieElements.forEach(function(key) { // Creating charts
+            var id = key.id;
+            var selector = "#" + id;
+            var data = opencharts.getData(selector);
+
+            opencharts.select(selector).pie().data(data).create(); // Create pie
+        });
+    }
 });
 ////////////////////////////////////////////////////////////////////////////////////////////
 // The MIT License (MIT)                                                                  //
@@ -122,106 +149,120 @@ document.addEventListener("DOMContentLoaded", function() {
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------------------------
-// Set type of chart
-//------------------------------------------------------------------------------------------
-opencharts.pie = function(){
+
+(function(){
     "use strict";
 
-    this._type = "pie";
-    return this;
-};
+    // pie component
+    var pie = {};
 
-//------------------------------------------------------------------------------------------
-// Set the data for the current pie chart
-//------------------------------------------------------------------------------------------
-opencharts.pie().data =  function(data){
-    "use strict";
-
-    this._data = data;
-    // Data consistency test missing
-    return this;
-};
-
-//------------------------------------------------------------------------------------------
-// Create pie chart
-//------------------------------------------------------------------------------------------
-opencharts.pie().create = function(){
-    "use strict";
-
-    console.log("creating");
-
-    
-    var data = this._data;
-    var values = data.values;
-    var labels = data.labels;
-    var w = 400;
-    var h = 400;
-    var r = h/2;
-    var color = d3.scale.category20c();
-
-    var pieName = this._selector.replace("#", "");    
-
-    // Effects
-    var synchronizedMouseOver = function() {
-        var _arc = d3.select(this);
-        var _indexValue = _arc.attr("index_value");
-
-        var _arcSelector = "." + "pie-" + pieName + "-arc-" + _indexValue;
-        d3.selectAll(_arcSelector).style("fill", "#1f949f");
+    //------------------------------------------------------------------------------------------
+    // Set the data for the current pie chart
+    //------------------------------------------------------------------------------------------
+    pie.data = function(data) {
+        this.parent._data = data;
+        // Data consistency test missing
+        return this;
     };
 
-    var synchronizedMouseOut = function() {
+    //------------------------------------------------------------------------------------------
+    // Create pie chart
+    //------------------------------------------------------------------------------------------
+    pie.create = function() {
+        console.log("creating");
 
-        var _arc = d3.select(this);
-        var _indexValue = _arc.attr("index_value");
-        console.log("." + "pie-" + pieName + "-arc-" + _indexValue);
-        console.log(_indexValue);
-        console.log(this);
+        var data = this.parent._data;
+        var w = 400;
+        var h = 400;
+        var r = Math.min(w, h) / 2;
+        var color = d3.scale.category20c();
 
-        var _arcSelector = "." + "pie-" + pieName + "-arc-" + _indexValue;
-        var _selectedArc = d3.selectAll(_arcSelector);
-        var _colorValue = _selectedArc.attr("color_value");
-        _selectedArc.style("fill", _colorValue);
+        var chartSelector = this.parent._selector;    
+        var chartName = chartSelector.replace("#", "");    
 
-    };
+        // Effects
+        var synchronizedMouseOver = function() {
+            var _arc = d3.select(this);
+            var _indexValue = _arc.attr("index_value");
 
+            var _arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + _indexValue;
+            d3.selectAll(_arcSelector).style("fill", color(_indexValue));
+        };
 
+        var synchronizedMouseOut = function() {
 
-    var vis = d3.select(this._selector).append("svg:svg").data([values]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
-    var pie = d3.layout.pie().value(function(d){
-        return d;
-    });
+            var _arc = d3.select(this);
+            var _indexValue = _arc.attr("index_value");
 
-    // declare an arc generator function
-    var arc = d3.svg.arc().outerRadius(r);
+            var _arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + _indexValue;
+            var _selectedArc = d3.selectAll(_arcSelector);
+            _selectedArc.style("fill", "#ffffff");
 
-    // select paths, use arc generator to draw
-    var arcs = vis.selectAll("g.slice").data(pie).enter().append("svg:g").attr("class", "slice");
-    arcs.attr("index_value", function(d, i) { return "index-" + i; });
-    arcs.append("svg:path")
-        .attr("class", function(d, i) { return "pie-" + pieName + "-arc-index-" + i; })
-        .attr("color_value", function(d, i) { return color(i); }) // Bar fill color...
-        .attr("fill", function(d, i){
-            return color(i);
-        })
-        .attr("d", function (d) {
-            // log the result of the arc generator to show how cool it is :)
-            return arc(d);
-        });
+        };
 
-    // add the text
-    arcs.append("svg:text").attr("transform", function(d){
+        var svg = this.parent.utils.createSVG(chartSelector, w, h);
+
+        var pie = d3.layout.pie().value(function(d){return d.value;});
+
+        // declare an arc generator function
+        var arc = d3.svg.arc().outerRadius(r - 10);
+        var outArc = d3.svg.arc().innerRadius(r).outerRadius(r - 6);
+
+        var g = svg.selectAll(".arc")
+            .data(pie(data))
+            .enter().append("g")
+            .classed("arc", true)
+            .attr("transform", "translate(" + r + "," + r + ")")
+            .attr("index_value", function(d, i) { return i; });
+            
+        g.append("path")
+            .attr("d", arc)
+            .attr("class", function(d, i) { 
+                return "pie-" + chartName + "-arc-index-" + i; /////********
+            })
+            .attr("fill", function(d, i){
+                return color(i);
+            })
+            .attr("d", function (d) {
+                return arc(d);
+            });
+
+        g.append("path")
+            .attr("d", outArc)
+            .attr("class", function(d, i) { 
+                return "pie-outer-arc pie-outer-" + chartName + "-arc-index-" + i; 
+            })
+            .attr("fill", "#ffffff")
+            .attr("d", function (d) {
+                // log the result of the arc generator to show how cool it is :)
+                return outArc(d);
+            });
+
+        g.append("text")
+            .attr("transform", function(d){
                 d.innerRadius = 0;
                 d.outerRadius = r;
-        return "translate(" + arc.centroid(d) + ")";}).attr("text-anchor", "middle").text( function(d, i) {
-            return labels[i];
-        }
-    );
+                return "translate(" + arc.centroid(d) + ")";
+            })
+            .attr("text-anchor", "middle").text( function(d, i) {
+                return data[i].label;
+            }
+        );
 
-    arcs.on('mouseover', synchronizedMouseOver)
-        .on("mouseout", synchronizedMouseOut);
+        g.on('mouseover', synchronizedMouseOver)
+            .on("mouseout", synchronizedMouseOut);
+
+        return true;
+    };
 
 
-    return this;
-};
+    //------------------------------------------------------------------------------------------
+    // Set type of chart
+    //------------------------------------------------------------------------------------------
+    opencharts.pie = function() {
+        this._type = "pie";
+        pie.parent = this;
+
+        return pie;
+    };    
+})();

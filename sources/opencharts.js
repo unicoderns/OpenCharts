@@ -25,6 +25,10 @@
 (function(){
     "use strict";
 
+    //==========================================================================================
+    // Public functions
+    //==========================================================================================
+
     //------------------------------------------------------------------------------------------
     // Main Object, everything it's contained here
     //------------------------------------------------------------------------------------------
@@ -39,8 +43,6 @@
     // Select the chart
     //------------------------------------------------------------------------------------------
     opencharts.select =  function(selector){
-        "use strict";
-
         this._selector = selector;
         return this;
     };
@@ -49,8 +51,6 @@
     // Print the current object
     //------------------------------------------------------------------------------------------
     opencharts.print =  function(){
-        "use strict";
-
         console.log(this);
         return this;
     };
@@ -58,17 +58,13 @@
     //------------------------------------------------------------------------------------------
     // Init
     //------------------------------------------------------------------------------------------
-    opencharts._init = function() {
-        "use strict";
-
+    opencharts.init = function() {
     };
 
     //------------------------------------------------------------------------------------------
     // Getting data object from DOM using d3 (custom tags)
     //------------------------------------------------------------------------------------------
-    opencharts._getData = function(selector) {
-        "use strict";
-
+    opencharts.getData = function(selector) {
         var dataString = d3.select(selector)[0][0].dataset.object;
         var dataArray = dataString.split(".");
         var data;
@@ -82,6 +78,27 @@
         });
 
         return data;
+    };
+
+
+    //==========================================================================================
+    // Chart utils
+    //==========================================================================================
+
+    opencharts.utils = {};
+
+
+    //------------------------------------------------------------------------------------------
+    // Creating SVG image
+    //------------------------------------------------------------------------------------------
+    opencharts.utils.createSVG = function(selector, width, height) {
+        return d3.select(selector)
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("preserveAspectRatio", "xMinYMin meet")
+            .attr("viewBox", "0 0 " + width + " " + height )
+            .classed("svg-content-responsive", true);        
     };
  
     // Making opencharts var public
@@ -102,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function() {
         pieElements.forEach(function(key) { // Creating charts
             var id = key.id;
             var selector = "#" + id;
-            var data = opencharts._getData(selector);
+            var data = opencharts.getData(selector);
 
             opencharts.select(selector).pie().data(data).create(); // Create pie
         });
