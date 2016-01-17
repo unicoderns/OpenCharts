@@ -36,9 +36,26 @@
         selector: "",
         data: "",
         type: "",
-        settings: {
-            default: {
-                colors: d3.scale.category20c()
+        default: {
+            colors: d3.scale.category20c(),
+            legends: {
+                position: 'top',
+                align: 'left',
+                shapeSize: 14
+            },
+            margin: { // Reminder: test the consistency on custom setups
+                top: 0, 
+                right: 0, 
+                bottom: 0, 
+                left: 0
+            },
+            pie: {
+                width: 400,
+                height: 440
+            },
+            bar: {
+                width: 400,
+                height: 100
             }
         },
         charts: {}, // Settings for each chart
@@ -48,7 +65,7 @@
     // Select the chart
     //------------------------------------------------------------------------------------------
     opencharts.select =  function(selector){
-        this.selector = selector;
+        this.selector = selector.replace("#", "");
         return this;
     };
 
@@ -91,7 +108,7 @@
 //------------------------------------------------------------------------------------------
 // On page load create custom-tags elements
 //------------------------------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", function() {
+/*document.addEventListener("DOMContentLoaded", function() {
     "use strict";
 
     var pieElements = d3.selectAll("opencharts-pie");
@@ -107,4 +124,4 @@ document.addEventListener("DOMContentLoaded", function() {
             opencharts.select(selector).pie().data(data).create(); // Create pie
         });
     }
-});
+});*/
