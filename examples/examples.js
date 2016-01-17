@@ -26,11 +26,36 @@ var oc_examples = {}
 
 oc_examples.now = 1451580978;
 
-oc_examples.data = [{"label": "Category A", "value": 20, "color": "#9b3388"},
-                    {"label": "Category B", "value": 50, "color": "#4f99fc"}, 
-                    {"label": "Category C", "value": 30, "color": "#fe8a4d"}];
+/*oc_examples.data = function () {
+    return [
+            {"label": "Category A", "value": Math.random() * 100, "color": "#9b3388"},
+            {"label": "Category B", "value": Math.random() * 100, "color": "#4f99fc"}, 
+            {"label": "Category C", "value": Math.random() * 100, "color": "#fe8a4d"},
+            ];
+    }
+*/
 
-opencharts.select("#hola").pie().data(oc_examples.data).create();
+oc_examples.data = function () {
+    return [
+            {"label": "One", "value": Math.random() * 100},
+            {"label": "Two", "value": Math.random() * 100}, 
+            {"label": "Three", "value": Math.random() * 100},
+
+            {"label": "Four", "value": Math.random() * 100},
+            {"label": "Five", "value": Math.random() * 100},
+            {"label": "Six", "value": Math.random() * 100},         
+
+            {"label": "One2", "value": Math.random() * 100},
+            {"label": "Two2", "value": Math.random() * 100}, 
+            {"label": "Three2", "value": Math.random() * 100},
+
+            {"label": "Four2", "value": Math.random() * 100},
+            {"label": "Five2", "value": Math.random() * 100},
+            {"label": "Six2", "value": Math.random() * 100}            
+            ];
+    }
+
+opencharts.select("#hola").pie().data(oc_examples.data()).create();
 
 oc_examples.data2 = [{
     title: "Default data",
@@ -46,3 +71,11 @@ for (i = 0; i < 20; i++) {
 }
 
 opencharts.select("#hola2").bar().data(oc_examples.data2).create();
+
+function update() {
+    setTimeout(function () {
+        opencharts.select("#hola").pie().data(oc_examples.data()).update();
+        update();
+    }, 1000);
+};
+update();

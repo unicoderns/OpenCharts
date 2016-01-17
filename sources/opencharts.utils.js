@@ -49,7 +49,7 @@
     // Creating SVG image
     //------------------------------------------------------------------------------------------
     utils.getColor = function(i) {
-        return core.data[i].color || settings.default.colors(i);
+        return core.data[i].color || core.settings.default.colors(i);
     };
 
     core.utils = utils;
