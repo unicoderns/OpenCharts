@@ -21,35 +21,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE          //
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
-var oc_examples = {};
 
-oc_examples.data = function() {
-    return [
-        { label: "Category A", value: Math.random() * 100, color: "#9b3388" },
-        { label: "Category B", value: Math.random() * 100, color: "#4f99fc" },
-        { label: "Category C", value: Math.random() * 100, color: "#fe8a4d" },
-    ];
+
+export enum Types {"pie"};
+export enum VAlign {"top", "middle", "bottom"};
+export enum Align {"left", "center", "right"};
+export enum Colors {"#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"};
+
+export interface Legend {
+    position: VAlign;
+    align: Align;
+    shapeSize: number;
+    legends: any;
+}
+
+export interface Margin {
+    top: 20;
+    right: 20;
+    bottom: 20;
+    left: 20;
 };
-
-require.config({
-    paths: {
-        d3: "../bower_components/d3/d3.min"
-    }
-});
-
-require(['opencharts.pie'], function(OpenCharts) {
-    function generate() {}
-
-    var test = new OpenCharts.Pie("#hola3");
-    test.setData(oc_examples.data());
-    test.create();
-
-    function update() {
-        setTimeout(function() {
-            test.setData(oc_examples.data());
-            test.update();
-            update();
-        }, 3000);
-    }
-    update();
-});

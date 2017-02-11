@@ -1,5 +1,5 @@
 * {
-    font-family: "Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Roboto, Arial, sans-serif;
 }
 
 .svg-content-responsive {
@@ -12,11 +12,14 @@
 }
 
 .svg-content-responsive .legend {
-    font-size: 14px;    
+    font-size: 14px;
 }
 
 .svg-content-responsive .pie-outer-arc {
     opacity: 0.4;
+}
+
+.svg-content-responsive .outer-arc.animate {
     -webkit-transition: all 0.4s ease-in-out;
     -moz-transition: all 0.4s ease-in-out;
     -o-transition: all 0.4s ease-in-out;

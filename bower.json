@@ -1,0 +1,20 @@
+{
+  "name": "OpenCharts",
+  "description": "It's time to easier beautiful charts",
+  "main": "OpenCharts.js",
+  "authors": [
+    "Chriss Mejía"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/chrissmejia/OpenCharts",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "^4.4.0"
+  }
+}
