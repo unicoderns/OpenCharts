@@ -68,6 +68,15 @@ declare module "opencharts" {
         protected getColor(index: number): string;
     }
 }
+declare module "opencharts.bar" {
+    import { Chart } from "opencharts";
+    export class Bar extends Chart {
+        protected svg: any;
+        protected bar: any;
+        constructor(selector: any);
+        create(): void;
+    }
+}
 declare module "opencharts.pie" {
     import { Chart } from "opencharts";
     import * as d3 from "d3";

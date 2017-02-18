@@ -23,6 +23,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 var oc_examples = {};
 
+oc_examples.now = Date.now();
+
+// Pie Data
 oc_examples.data = function() {
     return [
         { label: "Category A", value: Math.random() * 100, color: "#9b3388" },
@@ -31,16 +34,29 @@ oc_examples.data = function() {
     ];
 };
 
+// Bar Data
+oc_examples.data2 = [{
+    title: "Default data",
+    color: "#9b3388",
+    values: []
+}];
+
+for (i = 0; i < 20; i++) {
+    oc_examples.data2[0].values.push({
+        label: oc_examples.now + (i * 86400),
+        value: Math.random() * 100
+    });
+}
+
+// Creating Charts
 require.config({
     paths: {
         d3: "../bower_components/d3/d3.min"
     }
 });
 
-require(['opencharts.pie'], function(OpenCharts) {
-    function generate() {}
-
-    var test = new OpenCharts.Pie("#hola3");
+require(['opencharts.pie'], function(pie) {
+    var test = new pie.Pie("#hola");
     test.setData(oc_examples.data());
     test.create();
 
@@ -52,4 +68,11 @@ require(['opencharts.pie'], function(OpenCharts) {
         }, 3000);
     }
     update();
+});
+
+require(['opencharts.bar'], function(bar) {
+    console.log(oc_examples.data2);
+    var test = new bar.Bar("#hola2");
+    test.setData(oc_examples.data2);
+    test.create();
 });

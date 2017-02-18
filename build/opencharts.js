@@ -170,7 +170,73 @@ define("opencharts", ["require", "exports", "d3"], function (require, exports, d
     }());
     exports.Chart = Chart;
 });
-define("opencharts.pie", ["require", "exports", "opencharts", "d3"], function (require, exports, opencharts_1, d3) {
+define("opencharts.bar", ["require", "exports", "opencharts", "d3"], function (require, exports, opencharts_1, d3) {
+    "use strict";
+    var Bar = (function (_super) {
+        __extends(Bar, _super);
+        function Bar(selector) {
+            return _super.call(this, selector) || this;
+        }
+        Bar.prototype.create = function () {
+            var main = this;
+            var data = main.dataArray;
+            var canvasWidth = main.getCanvasWidth();
+            var canvasHeight = main.getCanvasHeight();
+            var values = data[0].values;
+            var valuesLength = values.length;
+            var margin = { top: 1, right: 0, bottom: 18, left: 22 };
+            var w = 400;
+            var h = 100;
+            var chartW = w - (margin.left + margin.right);
+            var chartH = h - (margin.top + margin.bottom);
+            var gap = 2;
+            var barWidth = (chartW / valuesLength) - gap;
+            var chartName = main.selector + "-chart";
+            main.svg = main.createSVG();
+            var xScale = d3.scaleTime()
+                .domain([
+                new Date(values[0].label * 1000),
+                d3.timeDay.offset(new Date(values[valuesLength - 1].label * 1000), 1)
+            ])
+                .range([0, chartW]);
+            var yScale = d3.scaleLinear()
+                .domain([
+                d3.max(values, function (d) { return d.value; }),
+                d3.min(values, function (d) { return d.value; })
+            ])
+                .range([0, chartH]);
+            this.svg.selectAll("rect")
+                .data(values)
+                .enter()
+                .append("rect")
+                .attr("fill", function (d, i) {
+                return main.getColor(0);
+            })
+                .attr("x", function (d, i) {
+                return gap + i * (barWidth + gap) + margin.left;
+            })
+                .attr("y", function (d) {
+                return (chartH + margin.top) - yScale(d.value);
+            })
+                .attr("width", barWidth)
+                .attr("height", function (d) {
+                return yScale(d.value);
+            });
+            this.svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + margin.left + "," + (chartH + margin.top) + ")")
+                .call(d3.axisBottom(xScale));
+            this.svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+                .call(d3.axisLeft(yScale));
+        };
+        ;
+        return Bar;
+    }(opencharts_1.Chart));
+    exports.Bar = Bar;
+});
+define("opencharts.pie", ["require", "exports", "opencharts", "d3"], function (require, exports, opencharts_2, d3) {
     "use strict";
     var Pie = (function (_super) {
         __extends(Pie, _super);
@@ -265,7 +331,7 @@ define("opencharts.pie", ["require", "exports", "opencharts", "d3"], function (r
         };
         ;
         return Pie;
-    }(opencharts_1.Chart));
+    }(opencharts_2.Chart));
     exports.Pie = Pie;
 });
 //# sourceMappingURL=opencharts.js.map
