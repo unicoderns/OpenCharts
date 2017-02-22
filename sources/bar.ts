@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { Chart } from "./opencharts";
+import { Chart } from "./chart";
 import * as d3 from "d3";
 import * as IData from "./interfaces/IData";
 import * as ILegend from "./interfaces/ILabel";

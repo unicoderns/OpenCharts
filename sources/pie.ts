@@ -22,7 +22,7 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-import { Chart } from "./opencharts";
+import { Chart } from "./abstract/chart";
 import * as d3 from "d3";
 import * as IData from "./interfaces/IData";
 
