@@ -27,11 +27,4 @@ import { Chart } from "./chart";
 
 export class RegularChart extends Chart {
 
-    // ------------------------------------------------------------------------------------------
-    // Get color from data or default
-    // ------------------------------------------------------------------------------------------
-    protected getColor(index: number): string {
-        return this.settings.data[index].color || this.colors[index];
-    };
-
 }

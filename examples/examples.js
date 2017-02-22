@@ -28,11 +28,13 @@ oc_examples.months = new Array("January", "February", "March", "April", "May", "
 
 // Pie Data
 oc_examples.pie = function() {
-    return [
-        { label: "Category A", value: Math.random() * 100, color: "#9b3388" },
-        { label: "Category B", value: Math.random() * 100, color: "#4f99fc" },
-        { label: "Category C", value: Math.random() * 100, color: "#fe8a4d" },
-    ];
+    return {
+        data: [
+            { label: "Category A", value: Math.random() * 100, color: "#9b3388" },
+            { label: "Category B", value: Math.random() * 100, color: "#4f99fc" },
+            { label: "Category C", value: Math.random() * 100, color: "#fe8a4d" },
+        ]
+    };
 };
 
 // Bar Data
@@ -53,6 +55,8 @@ for (i = 0; i < 11; i++) {
 
 // Bar Time X Data
 oc_examples.bar2 = {
+    width: 700,
+    height: 350,
     axis: {
         x: {
             type: "time",

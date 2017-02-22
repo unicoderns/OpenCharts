@@ -55,22 +55,22 @@ declare module "abstract/chart" {
         protected createSVG(): any;
         protected getCanvasWidth(): number;
         protected getCanvasHeight(): number;
+        protected getColor(index: number): string;
     }
 }
 declare module "abstract/regularChart" {
     import { Chart } from "abstract/chart";
     export class RegularChart extends Chart {
-        protected getColor(index: number): string;
     }
 }
 declare module "abstract/roundChart" {
     import { Chart } from "abstract/chart";
     export class RoundChart extends Chart {
+        protected height: number;
         protected createSVGLegends(svg: any): any;
         protected getLegendX(calculatedLegends: any, i: any, legendWidth: any, legendHeight: any): number;
         protected getLegendY(calculatedLegends: any, i: any): any;
         protected getLegendShapeSize(): number;
-        protected getColor(index: number): string;
     }
 }
 declare module "interfaces/IData" {

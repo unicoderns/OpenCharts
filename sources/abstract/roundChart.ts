@@ -26,6 +26,7 @@ import * as d3 from "d3";
 import { Chart } from "./chart";
 
 export class RoundChart extends Chart {
+    protected height: number = 400;
 
     // ------------------------------------------------------------------------------------------
     // Create Legends for SVG
@@ -35,6 +36,7 @@ export class RoundChart extends Chart {
         let main = this;
 
         let calculatedLegends = [];
+        let data = this.settings.data;
 
         let width = this.width;
         let margin = this.margin;
@@ -42,7 +44,7 @@ export class RoundChart extends Chart {
         let shapeSize: number = this.getLegendShapeSize();
 
         let legend = svg.selectAll(".legend")
-            .data(this.settings)
+            .data(data)
             .enter()
             .append("g")
             .attr("class", "legend");
@@ -127,12 +129,5 @@ export class RoundChart extends Chart {
     // ------------------------------------------------------------------------------------------
     protected getLegendShapeSize(): number {
         return this.legend.shapeSize;
-    };
-
-    // ------------------------------------------------------------------------------------------
-    // Get color from data or default
-    // ------------------------------------------------------------------------------------------
-    protected getColor(index: number): string {
-        return this.settings[index].color || this.colors[index];
     };
 }

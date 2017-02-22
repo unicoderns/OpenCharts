@@ -42,7 +42,7 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
     var Chart = (function () {
         function Chart(selector) {
             this.width = 400;
-            this.height = 400;
+            this.height = 200;
             this.margin = {
                 top: 0,
                 right: 0,
@@ -57,6 +57,12 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
         }
         Chart.prototype.setSettings = function (settings) {
             this.settings = settings;
+            if (settings.width) {
+                this.width = settings.width;
+            }
+            if (settings.height) {
+                this.height = settings.height;
+            }
         };
         Chart.prototype.createSVG = function () {
             var width = this.width;
@@ -82,6 +88,10 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
             return height - (margin.top + margin.bottom);
         };
         ;
+        Chart.prototype.getColor = function (index) {
+            return this.settings.data[index].color || this.colors[index];
+        };
+        ;
         return Chart;
     }());
     exports.Chart = Chart;
@@ -93,10 +103,6 @@ define("abstract/regularChart", ["require", "exports", "abstract/chart"], functi
         function RegularChart() {
             return _super.apply(this, arguments) || this;
         }
-        RegularChart.prototype.getColor = function (index) {
-            return this.settings.data[index].color || this.colors[index];
-        };
-        ;
         return RegularChart;
     }(chart_1.Chart));
     exports.RegularChart = RegularChart;
@@ -106,16 +112,19 @@ define("abstract/roundChart", ["require", "exports", "abstract/chart"], function
     var RoundChart = (function (_super) {
         __extends(RoundChart, _super);
         function RoundChart() {
-            return _super.apply(this, arguments) || this;
+            var _this = _super.apply(this, arguments) || this;
+            _this.height = 400;
+            return _this;
         }
         RoundChart.prototype.createSVGLegends = function (svg) {
             var main = this;
             var calculatedLegends = [];
+            var data = this.settings.data;
             var width = this.width;
             var margin = this.margin;
             var shapeSize = this.getLegendShapeSize();
             var legend = svg.selectAll(".legend")
-                .data(this.settings)
+                .data(data)
                 .enter()
                 .append("g")
                 .attr("class", "legend");
@@ -182,10 +191,6 @@ define("abstract/roundChart", ["require", "exports", "abstract/chart"], function
         ;
         RoundChart.prototype.getLegendShapeSize = function () {
             return this.legend.shapeSize;
-        };
-        ;
-        RoundChart.prototype.getColor = function (index) {
-            return this.settings[index].color || this.colors[index];
         };
         ;
         return RoundChart;
@@ -299,7 +304,7 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
             var _this = _super.apply(this, arguments) || this;
             _this.update = function () {
                 var main = this;
-                var data = main.settings;
+                var data = main.settings.data;
                 function arcTween(a) {
                     var i = d3.interpolate(this._current, a);
                     this._current = i(0);
@@ -322,7 +327,7 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
         }
         Pie.prototype.create = function () {
             var main = this;
-            var data = main.settings;
+            var data = main.settings.data;
             var canvasWidth = main.getCanvasWidth();
             var canvasHeight = main.getCanvasHeight();
             var chartName = main.selector + "-chart";

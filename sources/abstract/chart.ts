@@ -29,7 +29,7 @@ export class Chart {
     protected selector: string;
     protected settings: any;
     protected width: number = 400;
-    protected height: number = 400;
+    protected height: number = 200;
     protected colors: string[];
     //        protected legend: Legend;
     // protected margin: directions;
@@ -53,6 +53,14 @@ export class Chart {
 
     public setSettings(settings) {
         this.settings = settings;
+
+        if (settings.width) {
+            this.width = settings.width;
+        }
+
+        if (settings.height) {
+            this.height = settings.height;
+        }
     }
 
     // ------------------------------------------------------------------------------------------
@@ -108,6 +116,13 @@ export class Chart {
         let margin = this.margin;
 
         return height - (margin.top + margin.bottom);
+    };
+
+    // ------------------------------------------------------------------------------------------
+    // Get color from data or default
+    // ------------------------------------------------------------------------------------------
+    protected getColor(index: number): string {
+        return this.settings.data[index].color || this.colors[index];
     };
 
 }

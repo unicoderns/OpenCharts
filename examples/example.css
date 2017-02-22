@@ -3,6 +3,10 @@ body {
     padding: 1rem;
 }
 
+h3 {
+    color: #466997
+}
+
 .columns {
     float: left;
 }

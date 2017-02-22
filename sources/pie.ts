@@ -40,7 +40,7 @@ export class Pie extends RoundChart {
         // Main OpenCharts object
         let main: Pie = this;
 
-        let data = main.settings;
+        let data = main.settings.data;
         let canvasWidth = main.getCanvasWidth();
         let canvasHeight = main.getCanvasHeight();
 
@@ -132,7 +132,7 @@ export class Pie extends RoundChart {
     public update = function () {
         // Main OpenCharts object
         let main: Pie = this;
-        let data = main.settings;
+        let data = main.settings.data;
 
         function arcTween(a) {
             let i = d3.interpolate(this._current, a);
