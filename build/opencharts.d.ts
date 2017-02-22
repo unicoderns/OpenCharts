@@ -109,3 +109,7 @@ declare module "pie" {
         update: () => void;
     }
 }
+declare module "opencharts" {
+    export * from "bar";
+    export * from "pie";
+}

@@ -389,4 +389,12 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
     }(roundChart_1.RoundChart));
     exports.Pie = Pie;
 });
+define("opencharts", ["require", "exports", "bar", "pie"], function (require, exports, bar_1, pie_1) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    __export(bar_1);
+    __export(pie_1);
+});
 //# sourceMappingURL=opencharts.js.map
