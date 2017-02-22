@@ -24,9 +24,10 @@
 var oc_examples = {};
 
 oc_examples.now = Date.now();
+oc_examples.months = new Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
 
 // Pie Data
-oc_examples.data = function() {
+oc_examples.pie = function() {
     return [
         { label: "Category A", value: Math.random() * 100, color: "#9b3388" },
         { label: "Category B", value: Math.random() * 100, color: "#4f99fc" },
@@ -35,14 +36,38 @@ oc_examples.data = function() {
 };
 
 // Bar Data
-oc_examples.data2 = [{
-    title: "Default data",
-    color: "#9b3388",
-    values: []
-}];
+oc_examples.bar1 = {
+    data: [{
+        title: "Default data",
+        color: "#9b3388",
+        values: []
+    }]
+};
+
+for (i = 0; i < 11; i++) {
+    oc_examples.bar1.data[0].values.push({
+        label: oc_examples.months[i],
+        value: Math.random() * 100
+    });
+}
+
+// Bar Time X Data
+oc_examples.bar2 = {
+    axis: {
+        x: {
+            type: "time",
+            ticks: 10
+        }
+    },
+    data: [{
+        title: "Default data",
+        color: "#4f99fc",
+        values: []
+    }]
+};
 
 for (i = 0; i < 20; i++) {
-    oc_examples.data2[0].values.push({
+    oc_examples.bar2.data[0].values.push({
         label: oc_examples.now + (i * 86400),
         value: Math.random() * 100
     });
@@ -57,12 +82,12 @@ require.config({
 
 require(['opencharts.pie'], function(pie) {
     var test = new pie.Pie("#hola");
-    test.setData(oc_examples.data());
+    test.setSettings(oc_examples.pie());
     test.create();
 
     function update() {
         setTimeout(function() {
-            test.setData(oc_examples.data());
+            test.setSettings(oc_examples.pie());
             test.update();
             update();
         }, 3000);
@@ -71,8 +96,7 @@ require(['opencharts.pie'], function(pie) {
 });
 
 require(['opencharts.bar'], function(bar) {
-    console.log(oc_examples.data2);
     var test = new bar.Bar("#hola2");
-    test.setData(oc_examples.data2);
+    test.setSettings(oc_examples.bar2);
     test.create();
 });

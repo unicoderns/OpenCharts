@@ -4,6 +4,13 @@ declare module "interfaces/IData" {
         value: number;
     }
 }
+declare module "interfaces/ILabel" {
+    export enum IType {
+        "number" = 0,
+        "time" = 1,
+        "string" = 2,
+    }
+}
 declare module "utils" {
     export enum Types {
         "pie" = 0,
@@ -43,7 +50,7 @@ declare module "utils" {
 declare module "opencharts" {
     export class Chart {
         protected selector: string;
-        protected dataArray: any;
+        protected settings: any;
         protected width: number;
         protected height: number;
         protected colors: string[];
@@ -57,7 +64,7 @@ declare module "opencharts" {
             shapeSize: number;
         };
         constructor(selector: any);
-        setData(data: any): void;
+        setSettings(settings: any): void;
         protected createSVG(): any;
         protected createSVGLegends(svg: any): any;
         protected getLegendX(calculatedLegends: any, i: any, legendWidth: any, legendHeight: any): number;
@@ -70,11 +77,13 @@ declare module "opencharts" {
 }
 declare module "opencharts.bar" {
     import { Chart } from "opencharts";
+    import * as ILegend from "interfaces/ILabel";
     export class Bar extends Chart {
         protected svg: any;
         protected bar: any;
         constructor(selector: any);
         create(): void;
+        getXAxis(type: ILegend.IType, width: any): any;
     }
 }
 declare module "opencharts.pie" {
@@ -88,5 +97,6 @@ declare module "opencharts.pie" {
         constructor(selector: any);
         create(): void;
         update: () => void;
+        protected getColor(index: number): string;
     }
 }

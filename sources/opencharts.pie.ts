@@ -47,7 +47,7 @@ export class Pie extends Chart {
         // Main OpenCharts object
         let main: Pie = this;
 
-        let data = main.dataArray;
+        let data = main.settings;
         let canvasWidth = main.getCanvasWidth();
         let canvasHeight = main.getCanvasHeight();
 
@@ -139,6 +139,7 @@ export class Pie extends Chart {
     public update = function () {
         // Main OpenCharts object
         let main: Pie = this;
+        let data = main.settings;
 
         function arcTween(a) {
             let i = d3.interpolate(this._current, a);
@@ -149,18 +150,24 @@ export class Pie extends Chart {
         }
 
         main.svg.selectAll(".arc .inner-arc")
-            .data(main.pie(main.dataArray))
+            .data(main.pie(data))
             .transition()
             .duration(1000)
             .attrTween("d", arcTween);
 
         main.svg.selectAll(".arc .outer-arc")
-            .data(main.pie(main.dataArray))
-            .on("end", function() { console.log("all done"); })
+            .data(main.pie(data))
             .attr("d", function (d) {
                 return main.outArc(d);
             });
 
+    };
+
+    // ------------------------------------------------------------------------------------------
+    // Get color from data or default
+    // ------------------------------------------------------------------------------------------
+    protected getColor(index: number): string {
+        return this.settings[index].color || this.colors[index];
     };
 
 }

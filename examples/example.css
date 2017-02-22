@@ -1,0 +1,16 @@
+body {
+    margin: 0;
+    padding: 1rem;
+}
+
+.columns {
+    float: left;
+}
+
+.small-4 {
+    width: 33.33%;
+}
+
+.small-8 {
+    width: 66.66%;
+}

@@ -26,6 +26,7 @@
 import { Chart } from "./opencharts";
 import * as d3 from "d3";
 import * as IData from "./interfaces/IData";
+import * as ILegend from "./interfaces/ILabel";
 
 export class Bar extends Chart {
 
@@ -46,19 +47,19 @@ export class Bar extends Chart {
         // Main OpenCharts object
         let main: Bar = this;
 
-        let data = main.dataArray;
-        let canvasWidth = main.getCanvasWidth();
-        let canvasHeight = main.getCanvasHeight();
+        let settings = main.settings;
+        let data = settings.data[0];
+        let axis = settings.axis;
+        let width = main.getCanvasWidth();
+        let height = main.getCanvasHeight();
 
         // Configuration lets
-        let values = data[0].values;
+        let values = data.values;
         let valuesLength = values.length;
 
         let margin = { top: 1, right: 0, bottom: 18, left: 22 };
-        let w = 400;
-        let h = 100;
-        let chartW = w - (margin.left + margin.right);
-        let chartH = h - (margin.top + margin.bottom);
+        let chartW = width - (margin.left + margin.right);
+        let chartH = height - (margin.top + margin.bottom);
         let gap = 2;
 
         let barWidth = (chartW / valuesLength) - gap;
@@ -68,32 +69,34 @@ export class Bar extends Chart {
         main.svg = main.createSVG();
 
         // Data scale
+/*
         let xScale = d3.scaleTime()
             .domain([
                 new Date(values[0].label * 1000),
                 d3.timeDay.offset(new Date(values[valuesLength - 1].label * 1000), 1)
             ])
             .range([0, chartW]);
-
+*/
+        let xScale = main.getXAxis(ILegend.IType.time, chartW);
         let yScale = d3.scaleLinear()
             .domain([
                 d3.max(values, function (d: any) { return d.value; }),
                 d3.min(values, function (d: any) { return d.value; })
             ])
             .range([0, chartH]);
-/*
-        //Data axis
-        let yAxis = d3.svg.axis()
-            .scale(yScale)
-            .orient("left")
-            .ticks(5);  //Set rough # of ticks
-
-        let xAxis = d3.svg.axis()
-            .scale(xScale)
-            .orient("bottom")
-            .ticks(10)
-            .tickFormat(d3.time.format("%d/%m"));
-*/
+        /*
+                //Data axis
+                let yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left")
+                    .ticks(5);  //Set rough # of ticks
+        
+                let xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom")
+                    .ticks(10)
+                    .tickFormat(d3.time.format("%d/%m"));
+        */
         // Filling SVG with data
         this.svg.selectAll("rect")
             .data(values)
@@ -103,6 +106,7 @@ export class Bar extends Chart {
                 return main.getColor(0);
             })
             .attr("x", function (d, i) {
+                console.log(gap + i * (barWidth + gap) + margin.left);
                 return gap + i * (barWidth + gap) + margin.left;
             })
             .attr("y", function (d) {
@@ -117,15 +121,47 @@ export class Bar extends Chart {
         this.svg.append("g")
             .attr("class", "axis")
             .attr("transform", "translate(" + margin.left + "," + (chartH + margin.top) + ")")
-            .call(d3.axisBottom(xScale));
+            .call(d3.axisBottom(xScale)
+                .ticks(axis.x.ticks)
+                .tickFormat(d3.timeFormat("%d/%m"))
+            );
 
         // Create Y axis
         this.svg.append("g")
             .attr("class", "axis")
             .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
-            .call(d3.axisLeft(yScale));
-
+            .call(d3.axisLeft(yScale)
+                .ticks(10)
+            );
     };
+
+    // ==========================================================================================
+    // Create bar chart
+    // ==========================================================================================
+    public getXAxis(type: ILegend.IType, width) {
+        let scale;
+        let values = this.settings.data[0].values;
+
+        if (type === ILegend.IType.number) {
+            scale = d3.scaleOrdinal()
+                .range([
+                    d3.max(values, function (d: IData.IPie) { return d.label; }),
+                    d3.min(values, function (d: IData.IPie) { return d.label; })
+                ]);
+        } else if (type === ILegend.IType.time) {
+            scale = d3.scaleTime()
+                .domain([
+                    new Date(values[0].label * 1000),
+                    d3.timeDay.offset(new Date(values[values.length - 1].label * 1000), 1)
+                ])
+                .range([0, width]);
+        } else {
+            scale = d3.scaleLinear();
+        }
+
+        return scale;
+    }
+
     /*
     
         public update = function () {
@@ -157,118 +193,3 @@ export class Bar extends Chart {
     
     */
 }
-/*
-(function(){
-    "use strict";
-
-    // bar component
-    let bar = {};
-
-    //------------------------------------------------------------------------------------------
-    // Set the data for the current bar chart
-    //------------------------------------------------------------------------------------------
-    bar.data =  function(data) {
-        this.parent.data = data;
-        // Data consistency test missing
-        return this;
-    };
-
-    //------------------------------------------------------------------------------------------
-    // Create bar chart
-    //------------------------------------------------------------------------------------------
-    bar.create = function() {
-        let core = this.parent;
-        let utils = core.utils;
-
-        // Configuration lets
-        let data = core.data[0];
-        let values = data.values;
-        let valuesLength = values.length;
-
-        let margin = {top: 1, right: 0, bottom: 18, left: 22};
-        let w = 400;
-        let h = 100;
-        let chartW = w - (margin.left + margin.right);
-        let chartH = h - (margin.top + margin.bottom);
-        let gap = 2; 
-
-        let barWidth = (chartW / valuesLength) - gap;
-
-        let chartSelector = core.selector;    
-        let chartName = chartSelector.replace("#", "");
-
-        let svg = utils.createSVG(w, h);
-
-        // Data scale
-        let xScale = d3.time.scale()
-            .domain([
-                new Date(values[0].label * 1000), 
-                d3.time.day.offset(new Date(values[valuesLength - 1].label * 1000), 1)
-            ])
-            .range([0, chartW]); 
-
-        let yScale = d3.scale.linear()
-            .domain([
-                d3.max(values, function(d) { return d.value; }), 
-                d3.min(values, function(d) { return d.value; })
-            ])
-            .range([0, chartH]); 
-
-        //Data axis
-        let yAxis = d3.svg.axis()
-            .scale(yScale)
-            .orient("left")
-            .ticks(5);  //Set rough # of ticks
-
-        let xAxis = d3.svg.axis()
-            .scale(xScale)
-            .orient("bottom")
-            .ticks(10)
-            .tickFormat(d3.time.format("%d/%m"));
-
-        // Filling SVG with data
-        svg.selectAll("rect")
-            .data(values)
-            .enter()
-            .append("rect")
-            .attr("fill", function(d, i){
-                return utils.getColor(0);
-            })
-            .attr("x", function(d, i) {
-                return gap + i * (barWidth + gap) + margin.left;
-            })
-            .attr("y", function(d) {
-                return (chartH + margin.top) - yScale(d.value);  //Height minus data value
-            })
-            .attr("width", barWidth)
-            .attr("height", function(d) {
-                return yScale(d.value);
-            });
-
-        //Create X axis
-        svg.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(" + margin.left + "," + (chartH + margin.top) + ")")
-            .call(xAxis);
-
-        //Create Y axis
-        svg.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
-            .call(yAxis);
-
-        return true;
-    };
-
-
-    //------------------------------------------------------------------------------------------
-    // Set type of chart
-    //------------------------------------------------------------------------------------------
-    opencharts.bar = function() {
-        this.type = "bar";
-        bar.parent = this;
-
-        return bar;
-    };
-})();
-*/

@@ -6,6 +6,15 @@ var __extends = (this && this.__extends) || function (d, b) {
 define("interfaces/IData", ["require", "exports"], function (require, exports) {
     "use strict";
 });
+define("interfaces/ILabel", ["require", "exports"], function (require, exports) {
+    "use strict";
+    var IType;
+    (function (IType) {
+        IType[IType["number"] = 0] = "number";
+        IType[IType["time"] = 1] = "time";
+        IType[IType["string"] = 2] = "string";
+    })(IType = exports.IType || (exports.IType = {}));
+});
 define("utils", ["require", "exports"], function (require, exports) {
     "use strict";
     var Types;
@@ -58,8 +67,8 @@ define("opencharts", ["require", "exports", "d3"], function (require, exports, d
             this.selector = selector.replace("#", "");
             this.colors = d3.schemeCategory20c;
         }
-        Chart.prototype.setData = function (data) {
-            this.dataArray = data;
+        Chart.prototype.setSettings = function (settings) {
+            this.settings = settings;
         };
         Chart.prototype.createSVG = function () {
             var width = this.width;
@@ -80,7 +89,7 @@ define("opencharts", ["require", "exports", "d3"], function (require, exports, d
             var margin = this.margin;
             var shapeSize = this.getLegendShapeSize();
             var legend = svg.selectAll(".legend")
-                .data(this.dataArray)
+                .data(this.settings)
                 .enter()
                 .append("g")
                 .attr("class", "legend");
@@ -162,15 +171,14 @@ define("opencharts", ["require", "exports", "d3"], function (require, exports, d
         };
         ;
         Chart.prototype.getColor = function (index) {
-            console.log(this.dataArray[index].color);
-            return this.dataArray[index].color || this.colors[index];
+            return this.settings.data[index].color || this.colors[index];
         };
         ;
         return Chart;
     }());
     exports.Chart = Chart;
 });
-define("opencharts.bar", ["require", "exports", "opencharts", "d3"], function (require, exports, opencharts_1, d3) {
+define("opencharts.bar", ["require", "exports", "opencharts", "d3", "interfaces/ILabel"], function (require, exports, opencharts_1, d3, ILegend) {
     "use strict";
     var Bar = (function (_super) {
         __extends(Bar, _super);
@@ -179,26 +187,21 @@ define("opencharts.bar", ["require", "exports", "opencharts", "d3"], function (r
         }
         Bar.prototype.create = function () {
             var main = this;
-            var data = main.dataArray;
-            var canvasWidth = main.getCanvasWidth();
-            var canvasHeight = main.getCanvasHeight();
-            var values = data[0].values;
+            var settings = main.settings;
+            var data = settings.data[0];
+            var axis = settings.axis;
+            var width = main.getCanvasWidth();
+            var height = main.getCanvasHeight();
+            var values = data.values;
             var valuesLength = values.length;
             var margin = { top: 1, right: 0, bottom: 18, left: 22 };
-            var w = 400;
-            var h = 100;
-            var chartW = w - (margin.left + margin.right);
-            var chartH = h - (margin.top + margin.bottom);
+            var chartW = width - (margin.left + margin.right);
+            var chartH = height - (margin.top + margin.bottom);
             var gap = 2;
             var barWidth = (chartW / valuesLength) - gap;
             var chartName = main.selector + "-chart";
             main.svg = main.createSVG();
-            var xScale = d3.scaleTime()
-                .domain([
-                new Date(values[0].label * 1000),
-                d3.timeDay.offset(new Date(values[valuesLength - 1].label * 1000), 1)
-            ])
-                .range([0, chartW]);
+            var xScale = main.getXAxis(ILegend.IType.time, chartW);
             var yScale = d3.scaleLinear()
                 .domain([
                 d3.max(values, function (d) { return d.value; }),
@@ -213,6 +216,7 @@ define("opencharts.bar", ["require", "exports", "opencharts", "d3"], function (r
                 return main.getColor(0);
             })
                 .attr("x", function (d, i) {
+                console.log(gap + i * (barWidth + gap) + margin.left);
                 return gap + i * (barWidth + gap) + margin.left;
             })
                 .attr("y", function (d) {
@@ -225,13 +229,39 @@ define("opencharts.bar", ["require", "exports", "opencharts", "d3"], function (r
             this.svg.append("g")
                 .attr("class", "axis")
                 .attr("transform", "translate(" + margin.left + "," + (chartH + margin.top) + ")")
-                .call(d3.axisBottom(xScale));
+                .call(d3.axisBottom(xScale)
+                .ticks(axis.x.ticks)
+                .tickFormat(d3.timeFormat("%d/%m")));
             this.svg.append("g")
                 .attr("class", "axis")
                 .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
-                .call(d3.axisLeft(yScale));
+                .call(d3.axisLeft(yScale)
+                .ticks(10));
         };
         ;
+        Bar.prototype.getXAxis = function (type, width) {
+            var scale;
+            var values = this.settings.data[0].values;
+            if (type === ILegend.IType.number) {
+                scale = d3.scaleOrdinal()
+                    .range([
+                    d3.max(values, function (d) { return d.label; }),
+                    d3.min(values, function (d) { return d.label; })
+                ]);
+            }
+            else if (type === ILegend.IType.time) {
+                scale = d3.scaleTime()
+                    .domain([
+                    new Date(values[0].label * 1000),
+                    d3.timeDay.offset(new Date(values[values.length - 1].label * 1000), 1)
+                ])
+                    .range([0, width]);
+            }
+            else {
+                scale = d3.scaleLinear();
+            }
+            return scale;
+        };
         return Bar;
     }(opencharts_1.Chart));
     exports.Bar = Bar;
@@ -244,6 +274,7 @@ define("opencharts.pie", ["require", "exports", "opencharts", "d3"], function (r
             var _this = _super.call(this, selector) || this;
             _this.update = function () {
                 var main = this;
+                var data = main.settings;
                 function arcTween(a) {
                     var i = d3.interpolate(this._current, a);
                     this._current = i(0);
@@ -252,13 +283,12 @@ define("opencharts.pie", ["require", "exports", "opencharts", "d3"], function (r
                     };
                 }
                 main.svg.selectAll(".arc .inner-arc")
-                    .data(main.pie(main.dataArray))
+                    .data(main.pie(data))
                     .transition()
                     .duration(1000)
                     .attrTween("d", arcTween);
                 main.svg.selectAll(".arc .outer-arc")
-                    .data(main.pie(main.dataArray))
-                    .on("end", function () { console.log("all done"); })
+                    .data(main.pie(data))
                     .attr("d", function (d) {
                     return main.outArc(d);
                 });
@@ -267,7 +297,7 @@ define("opencharts.pie", ["require", "exports", "opencharts", "d3"], function (r
         }
         Pie.prototype.create = function () {
             var main = this;
-            var data = main.dataArray;
+            var data = main.settings;
             var canvasWidth = main.getCanvasWidth();
             var canvasHeight = main.getCanvasHeight();
             var chartName = main.selector + "-chart";
@@ -328,6 +358,10 @@ define("opencharts.pie", ["require", "exports", "opencharts", "d3"], function (r
                 .each(function (d) { this._current = d; });
             g.on("mouseover", synchronizedMouseOver)
                 .on("mouseout", synchronizedMouseOut);
+        };
+        ;
+        Pie.prototype.getColor = function (index) {
+            return this.settings[index].color || this.colors[index];
         };
         ;
         return Pie;

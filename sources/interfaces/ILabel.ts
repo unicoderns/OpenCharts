@@ -1,0 +1,1 @@
+export enum IType {"number", "time", "string"}

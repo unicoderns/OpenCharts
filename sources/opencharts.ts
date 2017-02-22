@@ -27,7 +27,7 @@ import { Types, VAlign, Align, Legend, Margin } from "./utils";
 
 export class Chart {
     protected selector: string;
-    protected dataArray: any;
+    protected settings: any;
     protected width: number = 400;
     protected height: number = 400;
     protected colors: string[];
@@ -51,8 +51,8 @@ export class Chart {
         this.colors = d3.schemeCategory20c;
     }
 
-    public setData(data) {
-        this.dataArray = data;
+    public setSettings(settings) {
+        this.settings = settings;
     }
 
     // ------------------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ export class Chart {
         let shapeSize: number = this.getLegendShapeSize();
 
         let legend = svg.selectAll(".legend")
-            .data(this.dataArray)
+            .data(this.settings)
             .enter()
             .append("g")
             .attr("class", "legend");
@@ -216,7 +216,6 @@ export class Chart {
     // Get color from data or default
     // ------------------------------------------------------------------------------------------
     protected getColor(index: number): string {
-        console.log(this.dataArray[index].color);
-        return this.dataArray[index].color || this.colors[index];
+        return this.settings.data[index].color || this.colors[index];
     };
 }
