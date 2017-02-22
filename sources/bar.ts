@@ -23,12 +23,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-import { Chart } from "./chart";
+import { RegularChart } from "./abstract/regularChart";
 import * as d3 from "d3";
 import * as IData from "./interfaces/IData";
 import * as ILegend from "./interfaces/ILabel";
 
-export class Bar extends Chart {
+export class Bar extends RegularChart {
 
     protected svg;
     protected bar;
@@ -106,7 +106,6 @@ export class Bar extends Chart {
                 return main.getColor(0);
             })
             .attr("x", function (d, i) {
-                console.log(gap + i * (barWidth + gap) + margin.left);
                 return gap + i * (barWidth + gap) + margin.left;
             })
             .attr("y", function (d) {

@@ -3,18 +3,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define("interfaces/IData", ["require", "exports"], function (require, exports) {
-    "use strict";
-});
-define("interfaces/ILabel", ["require", "exports"], function (require, exports) {
-    "use strict";
-    var IType;
-    (function (IType) {
-        IType[IType["number"] = 0] = "number";
-        IType[IType["time"] = 1] = "time";
-        IType[IType["string"] = 2] = "string";
-    })(IType = exports.IType || (exports.IType = {}));
-});
 define("utils", ["require", "exports"], function (require, exports) {
     "use strict";
     var Types;
@@ -49,7 +37,7 @@ define("utils", ["require", "exports"], function (require, exports) {
     ;
     ;
 });
-define("opencharts", ["require", "exports", "d3"], function (require, exports, d3) {
+define("abstract/chart", ["require", "exports", "d3"], function (require, exports, d3) {
     "use strict";
     var Chart = (function () {
         function Chart(selector) {
@@ -82,7 +70,45 @@ define("opencharts", ["require", "exports", "d3"], function (require, exports, d
                 .classed("svg-content-responsive", true);
         };
         ;
-        Chart.prototype.createSVGLegends = function (svg) {
+        Chart.prototype.getCanvasWidth = function () {
+            var width = this.width;
+            var margin = this.margin;
+            return width - (margin.left + margin.right);
+        };
+        ;
+        Chart.prototype.getCanvasHeight = function () {
+            var height = this.height;
+            var margin = this.margin;
+            return height - (margin.top + margin.bottom);
+        };
+        ;
+        return Chart;
+    }());
+    exports.Chart = Chart;
+});
+define("abstract/regularChart", ["require", "exports", "abstract/chart"], function (require, exports, chart_1) {
+    "use strict";
+    var RegularChart = (function (_super) {
+        __extends(RegularChart, _super);
+        function RegularChart() {
+            return _super.apply(this, arguments) || this;
+        }
+        RegularChart.prototype.getColor = function (index) {
+            return this.settings.data[index].color || this.colors[index];
+        };
+        ;
+        return RegularChart;
+    }(chart_1.Chart));
+    exports.RegularChart = RegularChart;
+});
+define("abstract/roundChart", ["require", "exports", "abstract/chart"], function (require, exports, chart_2) {
+    "use strict";
+    var RoundChart = (function (_super) {
+        __extends(RoundChart, _super);
+        function RoundChart() {
+            return _super.apply(this, arguments) || this;
+        }
+        RoundChart.prototype.createSVGLegends = function (svg) {
             var main = this;
             var calculatedLegends = [];
             var width = this.width;
@@ -123,7 +149,7 @@ define("opencharts", ["require", "exports", "d3"], function (require, exports, d
             return calculatedLegends;
         };
         ;
-        Chart.prototype.getLegendX = function (calculatedLegends, i, legendWidth, legendHeight) {
+        RoundChart.prototype.getLegendX = function (calculatedLegends, i, legendWidth, legendHeight) {
             var width = this.width;
             var canvasWidth = this.getCanvasWidth();
             var shapeSize = this.getLegendShapeSize();
@@ -149,36 +175,36 @@ define("opencharts", ["require", "exports", "d3"], function (require, exports, d
             return calculatedLegends[i].left + (shapeSize * 1.5);
         };
         ;
-        Chart.prototype.getLegendY = function (calculatedLegends, i) {
+        RoundChart.prototype.getLegendY = function (calculatedLegends, i) {
             calculatedLegends.height = calculatedLegends[i].top + calculatedLegends[i].height;
             return calculatedLegends[i].top;
         };
         ;
-        Chart.prototype.getCanvasWidth = function () {
-            var width = this.width;
-            var margin = this.margin;
-            return width - (margin.left + margin.right);
-        };
-        ;
-        Chart.prototype.getCanvasHeight = function () {
-            var height = this.height;
-            var margin = this.margin;
-            return height - (margin.top + margin.bottom);
-        };
-        ;
-        Chart.prototype.getLegendShapeSize = function () {
+        RoundChart.prototype.getLegendShapeSize = function () {
             return this.legend.shapeSize;
         };
         ;
-        Chart.prototype.getColor = function (index) {
-            return this.settings.data[index].color || this.colors[index];
+        RoundChart.prototype.getColor = function (index) {
+            return this.settings[index].color || this.colors[index];
         };
         ;
-        return Chart;
-    }());
-    exports.Chart = Chart;
+        return RoundChart;
+    }(chart_2.Chart));
+    exports.RoundChart = RoundChart;
 });
-define("opencharts.bar", ["require", "exports", "opencharts", "d3", "interfaces/ILabel"], function (require, exports, opencharts_1, d3, ILegend) {
+define("interfaces/IData", ["require", "exports"], function (require, exports) {
+    "use strict";
+});
+define("interfaces/ILabel", ["require", "exports"], function (require, exports) {
+    "use strict";
+    var IType;
+    (function (IType) {
+        IType[IType["number"] = 0] = "number";
+        IType[IType["time"] = 1] = "time";
+        IType[IType["string"] = 2] = "string";
+    })(IType = exports.IType || (exports.IType = {}));
+});
+define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/ILabel"], function (require, exports, regularChart_1, d3, ILegend) {
     "use strict";
     var Bar = (function (_super) {
         __extends(Bar, _super);
@@ -216,7 +242,6 @@ define("opencharts.bar", ["require", "exports", "opencharts", "d3", "interfaces/
                 return main.getColor(0);
             })
                 .attr("x", function (d, i) {
-                console.log(gap + i * (barWidth + gap) + margin.left);
                 return gap + i * (barWidth + gap) + margin.left;
             })
                 .attr("y", function (d) {
@@ -263,15 +288,15 @@ define("opencharts.bar", ["require", "exports", "opencharts", "d3", "interfaces/
             return scale;
         };
         return Bar;
-    }(opencharts_1.Chart));
+    }(regularChart_1.RegularChart));
     exports.Bar = Bar;
 });
-define("opencharts.pie", ["require", "exports", "opencharts", "d3"], function (require, exports, opencharts_2, d3) {
+define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (require, exports, roundChart_1, d3) {
     "use strict";
     var Pie = (function (_super) {
         __extends(Pie, _super);
-        function Pie(selector) {
-            var _this = _super.call(this, selector) || this;
+        function Pie() {
+            var _this = _super.apply(this, arguments) || this;
             _this.update = function () {
                 var main = this;
                 var data = main.settings;
@@ -360,12 +385,8 @@ define("opencharts.pie", ["require", "exports", "opencharts", "d3"], function (r
                 .on("mouseout", synchronizedMouseOut);
         };
         ;
-        Pie.prototype.getColor = function (index) {
-            return this.settings[index].color || this.colors[index];
-        };
-        ;
         return Pie;
-    }(opencharts_2.Chart));
+    }(roundChart_1.RoundChart));
     exports.Pie = Pie;
 });
 //# sourceMappingURL=opencharts.js.map

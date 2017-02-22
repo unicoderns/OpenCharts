@@ -1,16 +1,3 @@
-declare module "interfaces/IData" {
-    export interface IPie {
-        label: string;
-        value: number;
-    }
-}
-declare module "interfaces/ILabel" {
-    export enum IType {
-        "number" = 0,
-        "time" = 1,
-        "string" = 2,
-    }
-}
 declare module "utils" {
     export enum Types {
         "pie" = 0,
@@ -47,7 +34,7 @@ declare module "utils" {
         left: 20;
     }
 }
-declare module "opencharts" {
+declare module "abstract/chart" {
     export class Chart {
         protected selector: string;
         protected settings: any;
@@ -66,19 +53,43 @@ declare module "opencharts" {
         constructor(selector: any);
         setSettings(settings: any): void;
         protected createSVG(): any;
+        protected getCanvasWidth(): number;
+        protected getCanvasHeight(): number;
+    }
+}
+declare module "abstract/regularChart" {
+    import { Chart } from "abstract/chart";
+    export class RegularChart extends Chart {
+        protected getColor(index: number): string;
+    }
+}
+declare module "abstract/roundChart" {
+    import { Chart } from "abstract/chart";
+    export class RoundChart extends Chart {
         protected createSVGLegends(svg: any): any;
         protected getLegendX(calculatedLegends: any, i: any, legendWidth: any, legendHeight: any): number;
         protected getLegendY(calculatedLegends: any, i: any): any;
-        protected getCanvasWidth(): number;
-        protected getCanvasHeight(): number;
         protected getLegendShapeSize(): number;
         protected getColor(index: number): string;
     }
 }
-declare module "opencharts.bar" {
-    import { Chart } from "opencharts";
+declare module "interfaces/IData" {
+    export interface IPie {
+        label: string;
+        value: number;
+    }
+}
+declare module "interfaces/ILabel" {
+    export enum IType {
+        "number" = 0,
+        "time" = 1,
+        "string" = 2,
+    }
+}
+declare module "bar" {
+    import { RegularChart } from "abstract/regularChart";
     import * as ILegend from "interfaces/ILabel";
-    export class Bar extends Chart {
+    export class Bar extends RegularChart {
         protected svg: any;
         protected bar: any;
         constructor(selector: any);
@@ -86,17 +97,15 @@ declare module "opencharts.bar" {
         getXAxis(type: ILegend.IType, width: any): any;
     }
 }
-declare module "opencharts.pie" {
-    import { Chart } from "opencharts";
+declare module "pie" {
+    import { RoundChart } from "abstract/roundChart";
     import * as d3 from "d3";
-    export class Pie extends Chart {
+    export class Pie extends RoundChart {
         protected arc: d3.Arc<any, d3.DefaultArcObject>;
         protected outArc: d3.Arc<any, d3.DefaultArcObject>;
         protected svg: any;
         protected pie: any;
-        constructor(selector: any);
         create(): void;
         update: () => void;
-        protected getColor(index: number): string;
     }
 }

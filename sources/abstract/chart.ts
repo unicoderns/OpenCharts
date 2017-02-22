@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 import * as d3 from "d3";
-import { Types, VAlign, Align, Legend, Margin } from "./utils";
+import { Types, VAlign, Align, Legend, Margin } from "../utils";
 
 export class Chart {
     protected selector: string;
@@ -91,101 +91,6 @@ export class Chart {
     };
 
     // ------------------------------------------------------------------------------------------
-    // Create Legends for SVG
-    // ------------------------------------------------------------------------------------------
-    protected createSVGLegends(svg): any {
-        // Main OpenCharts object
-        let main = this;
-
-        let calculatedLegends = [];
-
-        let width = this.width;
-        let margin = this.margin;
-
-        let shapeSize: number = this.getLegendShapeSize();
-
-        let legend = svg.selectAll(".legend")
-            .data(this.settings)
-            .enter()
-            .append("g")
-            .attr("class", "legend");
-
-        legend.append("text")
-            .text(function (d) { return d.label; })
-            .attr("x", function (d, i) {
-                let legendWidth = this.getComputedTextLength();
-                let legendHeight = this.clientHeight;
-                return main.getLegendX(calculatedLegends, i, legendWidth, legendHeight);
-            })
-            .attr("y", function (d, i) {
-                return main.getLegendY(calculatedLegends, i);
-            });
-
-        let circleR: number = shapeSize / 2;
-
-        legend.append("circle")
-            .attr("r", circleR)
-            .attr("fill", function (d, i) {
-                return main.getColor(i);
-            })
-            .attr("cx", function (d, i) {
-                return calculatedLegends[i].left + circleR;
-            })
-            .attr("cy", function (d, i) {
-                return -1 * (margin.top + (calculatedLegends[i].height / 2)) + calculatedLegends[i].top + (circleR / 2);
-            });
-
-        legend.attr("transform", function (d, i) {
-            let horz = margin.left;
-            let vert = margin.top + calculatedLegends[i].height;
-            return "translate(" + horz + "," + vert + ")";
-        });
-        return calculatedLegends;
-    };
-
-    // ------------------------------------------------------------------------------------------
-    // Get chart legend X position
-    // ------------------------------------------------------------------------------------------
-    protected getLegendX(calculatedLegends, i, legendWidth, legendHeight): number {
-        let width = this.width;
-        let canvasWidth = this.getCanvasWidth();
-
-        let shapeSize = this.getLegendShapeSize();
-
-        calculatedLegends[i] = {};
-        calculatedLegends[i].height = legendHeight;
-
-        if (calculatedLegends[i - 1]) {
-            // Get provitional left
-            let legendLeft: number = calculatedLegends[i - 1].left + calculatedLegends[i - 1].width + (shapeSize * 2);
-
-            // Decide where to place it
-            if ((legendLeft + legendWidth) <= canvasWidth) {
-                calculatedLegends[i].left = legendLeft;
-                calculatedLegends[i].top = calculatedLegends[i - 1].top || 0;
-            } else {
-                calculatedLegends[i].left = 0;
-                calculatedLegends[i].top = calculatedLegends[i - 1].top + legendHeight;
-            }
-            calculatedLegends[i].width = legendWidth + shapeSize;
-
-        } else {
-            calculatedLegends[i].top = 0;
-            calculatedLegends[i].left = 0;
-            calculatedLegends[i].width = legendWidth + shapeSize;
-        }
-        return calculatedLegends[i].left + (shapeSize * 1.5);
-    };
-
-    // ------------------------------------------------------------------------------------------
-    // Get chart legend Y position
-    // ------------------------------------------------------------------------------------------
-    protected getLegendY(calculatedLegends, i) {
-        calculatedLegends.height = calculatedLegends[i].top + calculatedLegends[i].height;
-        return calculatedLegends[i].top;
-    };
-
-    // ------------------------------------------------------------------------------------------
     // Get chart canvas width or default
     // ------------------------------------------------------------------------------------------
     protected getCanvasWidth() {
@@ -205,17 +110,4 @@ export class Chart {
         return height - (margin.top + margin.bottom);
     };
 
-    // ------------------------------------------------------------------------------------------
-    // Get chart legend shape size or default
-    // ------------------------------------------------------------------------------------------
-    protected getLegendShapeSize(): number {
-        return this.legend.shapeSize;
-    };
-
-    // ------------------------------------------------------------------------------------------
-    // Get color from data or default
-    // ------------------------------------------------------------------------------------------
-    protected getColor(index: number): string {
-        return this.settings.data[index].color || this.colors[index];
-    };
 }

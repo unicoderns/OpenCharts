@@ -22,23 +22,16 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-import { Chart } from "./abstract/chart";
+import { RoundChart } from "./abstract/roundChart";
 import * as d3 from "d3";
 import * as IData from "./interfaces/IData";
 
-export class Pie extends Chart {
+export class Pie extends RoundChart {
 
     protected arc: d3.Arc<any, d3.DefaultArcObject>;
     protected outArc: d3.Arc<any, d3.DefaultArcObject>;
     protected svg;
     protected pie;
-
-    // ------------------------------------------------------------------------------------------
-    // Constructor
-    // ------------------------------------------------------------------------------------------
-    constructor(selector) {
-        super(selector);
-    }
 
     // ==========================================================================================
     // Create pie chart
@@ -161,13 +154,6 @@ export class Pie extends Chart {
                 return main.outArc(d);
             });
 
-    };
-
-    // ------------------------------------------------------------------------------------------
-    // Get color from data or default
-    // ------------------------------------------------------------------------------------------
-    protected getColor(index: number): string {
-        return this.settings[index].color || this.colors[index];
     };
 
 }

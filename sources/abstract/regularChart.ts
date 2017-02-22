@@ -21,82 +21,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE          //
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
-var oc_examples = {};
 
-oc_examples.now = Date.now();
-oc_examples.months = new Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+import * as d3 from "d3";
+import { Chart } from "./chart";
 
-// Pie Data
-oc_examples.pie = function() {
-    return [
-        { label: "Category A", value: Math.random() * 100, color: "#9b3388" },
-        { label: "Category B", value: Math.random() * 100, color: "#4f99fc" },
-        { label: "Category C", value: Math.random() * 100, color: "#fe8a4d" },
-    ];
-};
+export class RegularChart extends Chart {
 
-// Bar Data
-oc_examples.bar1 = {
-    data: [{
-        title: "Default data",
-        color: "#9b3388",
-        values: []
-    }]
-};
+    // ------------------------------------------------------------------------------------------
+    // Get color from data or default
+    // ------------------------------------------------------------------------------------------
+    protected getColor(index: number): string {
+        return this.settings.data[index].color || this.colors[index];
+    };
 
-for (i = 0; i < 11; i++) {
-    oc_examples.bar1.data[0].values.push({
-        label: oc_examples.months[i],
-        value: Math.random() * 100
-    });
 }
-
-// Bar Time X Data
-oc_examples.bar2 = {
-    axis: {
-        x: {
-            type: "time",
-            ticks: 10
-        }
-    },
-    data: [{
-        title: "Default data",
-        color: "#4f99fc",
-        values: []
-    }]
-};
-
-for (i = 0; i < 20; i++) {
-    oc_examples.bar2.data[0].values.push({
-        label: oc_examples.now + (i * 86400),
-        value: Math.random() * 100
-    });
-}
-
-// Creating Charts
-require.config({
-    paths: {
-        d3: "../bower_components/d3/d3.min"
-    }
-});
-
-require(['pie'], function(pie) {
-    var test = new pie.Pie("#hola");
-    test.setSettings(oc_examples.pie());
-    test.create();
-
-    function update() {
-        setTimeout(function() {
-            test.setSettings(oc_examples.pie());
-            test.update();
-            update();
-        }, 3000);
-    }
-    update();
-});
-
-require(['bar'], function(bar) {
-    var test = new bar.Bar("#hola2");
-    test.setSettings(oc_examples.bar2);
-    test.create();
-});
