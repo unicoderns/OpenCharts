@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 // The MIT License (MIT)                                                                  //
 //                                                                                        //
-// Copyright (C) 2016  Christopher Mejía Montoya - me@chrissmejia.com - chrissmejia.com   //
+// Copyright (C) 2016  Chriss Mejía - me@chrissmejia.com - chrissmejia.com                //
 //                                                                                        //
 // Permission is hereby granted, free of charge, to any person obtaining a copy           //
 // of this software and associated documentation files (the "Software"), to deal          //
@@ -22,38 +22,26 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-module.exports = function(grunt) {
-    "use strict";
+module.exports = function(grunt, tasks) {
+    // Load our node module required for this task.
+    grunt.loadNpmTasks('grunt-contrib-sass');
 
-    // URI paths for our tasks to use.
-    grunt.uri = "./";
-    grunt.source = "sources/";
-    grunt.build = "build/";
-    grunt.uriSrc = grunt.uri + grunt.source;
-    grunt.uriBuild = grunt.uri + grunt.build;
-    grunt.uriTask = grunt.uri + "grunt/";
+    // The configuration for a specific task.
+    tasks.sass = {
+        // The files that we want to check.
+        dist: {
+            options: { // Target options
+                style: 'compressed'
+            },
+            files: [{
+                expand: true,
+                cwd: grunt.uriSrc + '/styles/',
+                src: ['*.scss'],
+                dest: grunt.uriBuild + '/styles/',
+                ext: '.css'
+            }]
+        }
+    };
 
-    // Our task object where we'll store our configuration.
-    var tasks = {};
-
-    // Lint Tasks
-    tasks = require(grunt.uriTask + "js-lint.js")(grunt, tasks);
-
-    // Typescript Tasks
-    tasks = require(grunt.uriTask + "js-typescript.js")(grunt, tasks);
-
-    // Minify Tasks
-    tasks = require(grunt.uriTask + "js-minify.js")(grunt, tasks);
-
-    // Sass Tasks
-    tasks = require(grunt.uriTask + "sass.js")(grunt, tasks);
-
-    // Watch Tasks
-    tasks = require(grunt.uriTask + "js-watch.js")(grunt, tasks);
-
-    // Register The Tasks
-    grunt.registerTask("default", ["tslint", "ts", "uglify", "sass"]);
-
-    // Initialize The Grunt Configuration
-    grunt.initConfig(tasks);
+    return tasks;
 };

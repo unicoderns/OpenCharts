@@ -32,25 +32,12 @@ module.exports = function(grunt, tasks) {
     tasks.watch = {
 
         scripts: {
-            files: grunt.uriSrc + '/**/*.ts',
-            tasks: ["lint", "typescript", "minify"],
+            files: [grunt.uriSrc + '/**/*.ts', grunt.uriSrc + '/**/*.scss'],
+            tasks: ["tslint", "ts", "uglify", "sass"],
             options: {
                 interrupt: true,
             },
         }
-        //        lint: {
-        //            files: [grunt.source + "\*\*/\*.ts"],
-        //            tasks: ["lint"]
-        //        },
-        //        ts: {
-        //            files: [grunt.source + "\*\*/\*.ts"],
-        //            tasks: ["ts"]
-        //        },
-        //        minify: {
-        //            files: [grunt.build + "opencharts.js"],
-        //            tasks: ["minify"]
-        //        }
-
     };
 
     return tasks;
