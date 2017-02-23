@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////
 // The MIT License (MIT)                                                                  //
 //                                                                                        //
-// Copyright (C) 2016  Christopher Mejía Montoya - me@chrissmejia.com - chrissmejia.com   //
+// Copyright (C) 2016  Chriss Mejía - me@chrissmejia.com - chrissmejia.com                //
 //                                                                                        //
 // Permission is hereby granted, free of charge, to any person obtaining a copy           //
 // of this software and associated documentation files (the "Software"), to deal          //
@@ -22,39 +22,36 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-module.exports = function(grunt) {
-    "use strict";
+module.exports = function(grunt, tasks) {
+    // Load our node module required for this task.
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
-    // URI paths for our tasks to use.
-    grunt.uri = "./";
-    grunt.source = "sources/";
-    grunt.build = "build/";
-    grunt.uriSrc = grunt.uri + grunt.source;
-    grunt.uriBuild = grunt.uri + grunt.build;
-    grunt.uriTask = grunt.uri + "grunt/";
+    // The configuration for a specific task.
+    // In this case we have more than a single concat task. We need to append our task to our `tasks` object that
+    // way we're not overriding any of other previous tasks.
+    tasks.watch = {
 
-    // Our task object where we'll store our configuration.
-    var tasks = {};
+        scripts: {
+            files: grunt.uriSrc + '/**/*.ts',
+            tasks: ["lint", "typescript", "minify"],
+            options: {
+                interrupt: true,
+            },
+        }
+        //        lint: {
+        //            files: [grunt.source + "\*\*/\*.ts"],
+        //            tasks: ["lint"]
+        //        },
+        //        ts: {
+        //            files: [grunt.source + "\*\*/\*.ts"],
+        //            tasks: ["ts"]
+        //        },
+        //        minify: {
+        //            files: [grunt.build + "opencharts.js"],
+        //            tasks: ["minify"]
+        //        }
 
-    // Lint Tasks
-    tasks = require(grunt.uriTask + "js-lint.js")(grunt, tasks);
+    };
 
-    // Typescript Tasks
-    tasks = require(grunt.uriTask + "js-typescript.js")(grunt, tasks);
-
-    // Minify Tasks
-    tasks = require(grunt.uriTask + "js-minify.js")(grunt, tasks);
-
-    // Watch Tasks
-    tasks = require(grunt.uriTask + "js-watch.js")(grunt, tasks);
-
-    // Register The Tasks
-    grunt.registerTask("typescript", ["ts"]);
-    grunt.registerTask("lint", ["tslint"]);
-    grunt.registerTask("minify", ["uglify"]);
-
-    grunt.registerTask("default", ["lint", "typescript", "minify"]);
-
-    // Initialize The Grunt Configuration
-    grunt.initConfig(tasks);
+    return tasks;
 };
