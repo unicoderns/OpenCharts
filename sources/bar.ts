@@ -26,7 +26,7 @@
 import { RegularChart } from "./abstract/regularChart";
 import * as d3 from "d3";
 import * as IData from "./interfaces/IData";
-import * as ILegend from "./interfaces/ILabel";
+import * as IAxis from "./interfaces/IAxis";
 
 export class Bar extends RegularChart {
 
@@ -38,7 +38,44 @@ export class Bar extends RegularChart {
     // ------------------------------------------------------------------------------------------
     constructor(selector) {
         super(selector);
+        this.margin = { top: 1, right: 0, bottom: 18, left: 22 };
     }
+
+    // ==========================================================================================
+    // Check and create default settings
+    // ==========================================================================================
+    public fillDefaults() {
+        let main: Bar = this;
+
+        // Default data
+        if (main.settings.axis === undefined) {
+            main.settings.axis = {
+            };
+        }
+        if (main.settings.axis.x === undefined) {
+            main.settings.axis.x = {
+            };
+        }
+        if (main.settings.axis.x.ticks === undefined) {
+            main.settings.axis.x.ticks = 10;
+        }
+
+        // Defining default types for X axis
+        if (main.settings.axis.x.type === undefined) {
+            main.settings.axis.x.type = IAxis.X.string;
+        }
+        if (main.settings.axis.x.type === "string") {
+            main.settings.axis.x.type = IAxis.X.string;
+        }
+        if (main.settings.axis.x.type === "time") {
+            main.settings.axis.x.type = IAxis.X.time;
+
+            if (main.settings.axis.x.format === undefined) {
+                main.settings.axis.x.format = "%m/%d/%y";
+            }
+        }
+    }
+
 
     // ==========================================================================================
     // Create bar chart
@@ -46,6 +83,8 @@ export class Bar extends RegularChart {
     public create() {
         // Main OpenCharts object
         let main: Bar = this;
+        // Filling missing data
+        this.fillDefaults();
 
         let settings = main.settings;
         let data = settings.data[0];
@@ -57,7 +96,7 @@ export class Bar extends RegularChart {
         let values = data.values;
         let valuesLength = values.length;
 
-        let margin = { top: 1, right: 0, bottom: 18, left: 22 };
+        let margin = this.margin;
         let chartW = width - (margin.left + margin.right);
         let chartH = height - (margin.top + margin.bottom);
         let gap = 2;
@@ -69,21 +108,24 @@ export class Bar extends RegularChart {
         main.svg = main.createSVG();
 
         // Data scale
-/*
-        let xScale = d3.scaleTime()
-            .domain([
-                new Date(values[0].label * 1000),
-                d3.timeDay.offset(new Date(values[valuesLength - 1].label * 1000), 1)
-            ])
-            .range([0, chartW]);
-*/
-        let xScale = main.getXAxis(ILegend.IType.time, chartW);
+        /*
+                let xScale = d3.scaleTime()
+                    .domain([
+                        new Date(values[0].label * 1000),
+                        d3.timeDay.offset(new Date(values[valuesLength - 1].label * 1000), 1)
+                    ])
+                    .range([0, chartW]);
+        */
+        let xScale = main.getXScale(axis.x.type, chartW);
+        let yScale = main.getYScale(chartH);
+        /*
         let yScale = d3.scaleLinear()
             .domain([
                 d3.max(values, function (d: any) { return d.value; }),
                 d3.min(values, function (d: any) { return d.value; })
             ])
             .range([0, chartH]);
+            */
         /*
                 //Data axis
                 let yAxis = d3.svg.axis()
@@ -116,38 +158,19 @@ export class Bar extends RegularChart {
                 return yScale(d.value);
             });
 
-        // Create X axis
-        this.svg.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(" + margin.left + "," + (chartH + margin.top) + ")")
-            .call(d3.axisBottom(xScale)
-                .ticks(axis.x.ticks)
-                .tickFormat(d3.timeFormat("%d/%m"))
-            );
-
-        // Create Y axis
-        this.svg.append("g")
-            .attr("class", "axis")
-            .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
-            .call(d3.axisLeft(yScale)
-                .ticks(10)
-            );
+        this.createXLegends(xScale, height);
+        this.createYLegends(yScale);
     };
 
     // ==========================================================================================
-    // Create bar chart
+    // Scale for X Axis
     // ==========================================================================================
-    public getXAxis(type: ILegend.IType, width) {
+    public getXScale(type: IAxis.X, width) {
         let scale;
         let values = this.settings.data[0].values;
+        let labels = [];
 
-        if (type === ILegend.IType.number) {
-            scale = d3.scaleOrdinal()
-                .range([
-                    d3.max(values, function (d: IData.IPie) { return d.label; }),
-                    d3.min(values, function (d: IData.IPie) { return d.label; })
-                ]);
-        } else if (type === ILegend.IType.time) {
+        if (type === IAxis.X.time) {
             scale = d3.scaleTime()
                 .domain([
                     new Date(values[0].label * 1000),
@@ -155,10 +178,78 @@ export class Bar extends RegularChart {
                 ])
                 .range([0, width]);
         } else {
-            scale = d3.scaleLinear();
+            values.forEach(function (item) {
+                labels.push(item.label);
+            });
+
+            scale = d3.scaleBand()
+                // values.map(function (d) { return d.label; }) 
+                .domain(labels)
+                .rangeRound([0, width]);
         }
 
         return scale;
+    }
+
+    // ==========================================================================================
+    // Scale for Y Axis
+    // ==========================================================================================
+    public getYScale(height) {
+        let scale;
+        let values = this.settings.data[0].values;
+
+        scale = d3.scaleLinear()
+            .domain([
+                d3.max(values, function (d: IData.IPie) { return d.value; }),
+                d3.min(values, function (d: IData.IPie) { return d.value; })
+            ])
+            .range([0, height]);
+
+        return scale;
+    }
+
+    // ==========================================================================================
+    // Create legend for X Axis
+    // ==========================================================================================
+    public createXLegends(xScale, height) {
+        let main: Bar = this;
+        let axis = main.settings.axis;
+        let margin = main.margin;
+
+        if (axis.x.type === IAxis.X.time) {
+            // Create X axis
+            this.svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
+                .call(d3.axisBottom(xScale)
+                    .ticks(axis.x.ticks)
+                    .tickFormat(d3.timeFormat(axis.x.format))
+                );
+        } else {
+            // Create X axis
+            this.svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
+                .call(d3.axisBottom(xScale)
+                    .ticks(axis.x.ticks)
+                );
+        }
+
+    }
+
+    // ==========================================================================================
+    // Create legend for Y Axis
+    // ==========================================================================================
+    public createYLegends(yScale) {
+        let main: Bar = this;
+        let margin = main.margin;
+        // Create Y axis
+        this.svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+            .call(d3.axisLeft(yScale)
+                .ticks(10)
+            );
     }
 
     /*

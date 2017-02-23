@@ -79,22 +79,25 @@ declare module "interfaces/IData" {
         value: number;
     }
 }
-declare module "interfaces/ILabel" {
-    export enum IType {
-        "number" = 0,
-        "time" = 1,
-        "string" = 2,
+declare module "interfaces/IAxis" {
+    export enum X {
+        "time" = 0,
+        "string" = 1,
     }
 }
 declare module "bar" {
     import { RegularChart } from "abstract/regularChart";
-    import * as ILegend from "interfaces/ILabel";
+    import * as IAxis from "interfaces/IAxis";
     export class Bar extends RegularChart {
         protected svg: any;
         protected bar: any;
         constructor(selector: any);
+        fillDefaults(): void;
         create(): void;
-        getXAxis(type: ILegend.IType, width: any): any;
+        getXScale(type: IAxis.X, width: any): any;
+        getYScale(height: any): any;
+        createXLegends(xScale: any, height: any): void;
+        createYLegends(yScale: any): void;
     }
 }
 declare module "pie" {

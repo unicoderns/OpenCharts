@@ -24,7 +24,7 @@
 var oc_examples = {};
 
 oc_examples.now = Date.now();
-oc_examples.months = new Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+oc_examples.months = new Array("Apples", "Pineapples", "Oranges", "Peaches", "Bananas");
 
 // Pie Data
 oc_examples.pie = function() {
@@ -39,6 +39,8 @@ oc_examples.pie = function() {
 
 // Bar Data
 oc_examples.bar1 = {
+    width: 700,
+    height: 350,
     data: [{
         title: "Default data",
         color: "#9b3388",
@@ -46,7 +48,7 @@ oc_examples.bar1 = {
     }]
 };
 
-for (i = 0; i < 11; i++) {
+for (i = 0; i < 4; i++) {
     oc_examples.bar1.data[0].values.push({
         label: oc_examples.months[i],
         value: Math.random() * 100
@@ -60,7 +62,8 @@ oc_examples.bar2 = {
     axis: {
         x: {
             type: "time",
-            ticks: 8
+            format: "%d/%m",
+            ticks: 10
         }
     },
     data: [{
@@ -101,6 +104,12 @@ require(['opencharts'], function(opencharts) {
 
     // Bar
     var bar = new opencharts.Bar("#hola2");
-    bar.setSettings(oc_examples.bar2);
+    bar.setSettings(oc_examples.bar1);
     bar.create();
+
+    // Bar2
+    var bar2 = new opencharts.Bar("#hola3");
+    bar2.setSettings(oc_examples.bar2);
+    bar2.create();
+
 });

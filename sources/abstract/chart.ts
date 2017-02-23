@@ -51,15 +51,22 @@ export class Chart {
         this.colors = d3.schemeCategory20c;
     }
 
+    // ------------------------------------------------------------------------------------------
+    // Loading chart settings
+    // ------------------------------------------------------------------------------------------
     public setSettings(settings) {
-        this.settings = settings;
+        if (settings !== undefined) {
+            this.settings = settings;
 
-        if (settings.width) {
-            this.width = settings.width;
-        }
+            if (settings.width) {
+                this.width = settings.width;
+            }
 
-        if (settings.height) {
-            this.height = settings.height;
+            if (settings.height) {
+                this.height = settings.height;
+            }
+        } else {
+            console.error("Opencharts error: no data provided");
         }
     }
 

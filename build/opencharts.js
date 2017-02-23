@@ -56,12 +56,17 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
             this.colors = d3.schemeCategory20c;
         }
         Chart.prototype.setSettings = function (settings) {
-            this.settings = settings;
-            if (settings.width) {
-                this.width = settings.width;
+            if (settings !== undefined) {
+                this.settings = settings;
+                if (settings.width) {
+                    this.width = settings.width;
+                }
+                if (settings.height) {
+                    this.height = settings.height;
+                }
             }
-            if (settings.height) {
-                this.height = settings.height;
+            else {
+                console.error("Opencharts error: no data provided");
             }
         };
         Chart.prototype.createSVG = function () {
@@ -200,24 +205,50 @@ define("abstract/roundChart", ["require", "exports", "abstract/chart"], function
 define("interfaces/IData", ["require", "exports"], function (require, exports) {
     "use strict";
 });
-define("interfaces/ILabel", ["require", "exports"], function (require, exports) {
+define("interfaces/IAxis", ["require", "exports"], function (require, exports) {
     "use strict";
-    var IType;
-    (function (IType) {
-        IType[IType["number"] = 0] = "number";
-        IType[IType["time"] = 1] = "time";
-        IType[IType["string"] = 2] = "string";
-    })(IType = exports.IType || (exports.IType = {}));
+    var X;
+    (function (X) {
+        X[X["time"] = 0] = "time";
+        X[X["string"] = 1] = "string";
+    })(X = exports.X || (exports.X = {}));
 });
-define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/ILabel"], function (require, exports, regularChart_1, d3, ILegend) {
+define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/IAxis"], function (require, exports, regularChart_1, d3, IAxis) {
     "use strict";
     var Bar = (function (_super) {
         __extends(Bar, _super);
         function Bar(selector) {
-            return _super.call(this, selector) || this;
+            var _this = _super.call(this, selector) || this;
+            _this.margin = { top: 1, right: 0, bottom: 18, left: 22 };
+            return _this;
         }
+        Bar.prototype.fillDefaults = function () {
+            var main = this;
+            if (main.settings.axis === undefined) {
+                main.settings.axis = {};
+            }
+            if (main.settings.axis.x === undefined) {
+                main.settings.axis.x = {};
+            }
+            if (main.settings.axis.x.ticks === undefined) {
+                main.settings.axis.x.ticks = 10;
+            }
+            if (main.settings.axis.x.type === undefined) {
+                main.settings.axis.x.type = IAxis.X.string;
+            }
+            if (main.settings.axis.x.type === "string") {
+                main.settings.axis.x.type = IAxis.X.string;
+            }
+            if (main.settings.axis.x.type === "time") {
+                main.settings.axis.x.type = IAxis.X.time;
+                if (main.settings.axis.x.format === undefined) {
+                    main.settings.axis.x.format = "%m/%d/%y";
+                }
+            }
+        };
         Bar.prototype.create = function () {
             var main = this;
+            this.fillDefaults();
             var settings = main.settings;
             var data = settings.data[0];
             var axis = settings.axis;
@@ -225,20 +256,15 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             var height = main.getCanvasHeight();
             var values = data.values;
             var valuesLength = values.length;
-            var margin = { top: 1, right: 0, bottom: 18, left: 22 };
+            var margin = this.margin;
             var chartW = width - (margin.left + margin.right);
             var chartH = height - (margin.top + margin.bottom);
             var gap = 2;
             var barWidth = (chartW / valuesLength) - gap;
             var chartName = main.selector + "-chart";
             main.svg = main.createSVG();
-            var xScale = main.getXAxis(ILegend.IType.time, chartW);
-            var yScale = d3.scaleLinear()
-                .domain([
-                d3.max(values, function (d) { return d.value; }),
-                d3.min(values, function (d) { return d.value; })
-            ])
-                .range([0, chartH]);
+            var xScale = main.getXScale(axis.x.type, chartW);
+            var yScale = main.getYScale(chartH);
             this.svg.selectAll("rect")
                 .data(values)
                 .enter()
@@ -256,30 +282,15 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
                 .attr("height", function (d) {
                 return yScale(d.value);
             });
-            this.svg.append("g")
-                .attr("class", "axis")
-                .attr("transform", "translate(" + margin.left + "," + (chartH + margin.top) + ")")
-                .call(d3.axisBottom(xScale)
-                .ticks(axis.x.ticks)
-                .tickFormat(d3.timeFormat("%d/%m")));
-            this.svg.append("g")
-                .attr("class", "axis")
-                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
-                .call(d3.axisLeft(yScale)
-                .ticks(10));
+            this.createXLegends(xScale, height);
+            this.createYLegends(yScale);
         };
         ;
-        Bar.prototype.getXAxis = function (type, width) {
+        Bar.prototype.getXScale = function (type, width) {
             var scale;
             var values = this.settings.data[0].values;
-            if (type === ILegend.IType.number) {
-                scale = d3.scaleOrdinal()
-                    .range([
-                    d3.max(values, function (d) { return d.label; }),
-                    d3.min(values, function (d) { return d.label; })
-                ]);
-            }
-            else if (type === ILegend.IType.time) {
+            var labels = [];
+            if (type === IAxis.X.time) {
                 scale = d3.scaleTime()
                     .domain([
                     new Date(values[0].label * 1000),
@@ -288,9 +299,54 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
                     .range([0, width]);
             }
             else {
-                scale = d3.scaleLinear();
+                values.forEach(function (item) {
+                    labels.push(item.label);
+                });
+                scale = d3.scaleBand()
+                    .domain(labels)
+                    .rangeRound([0, width]);
             }
             return scale;
+        };
+        Bar.prototype.getYScale = function (height) {
+            var scale;
+            var values = this.settings.data[0].values;
+            scale = d3.scaleLinear()
+                .domain([
+                d3.max(values, function (d) { return d.value; }),
+                d3.min(values, function (d) { return d.value; })
+            ])
+                .range([0, height]);
+            return scale;
+        };
+        Bar.prototype.createXLegends = function (xScale, height) {
+            var main = this;
+            var axis = main.settings.axis;
+            var margin = main.margin;
+            if (axis.x.type === IAxis.X.time) {
+                this.svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
+                    .call(d3.axisBottom(xScale)
+                    .ticks(axis.x.ticks)
+                    .tickFormat(d3.timeFormat(axis.x.format)));
+            }
+            else {
+                this.svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
+                    .call(d3.axisBottom(xScale)
+                    .ticks(axis.x.ticks));
+            }
+        };
+        Bar.prototype.createYLegends = function (yScale) {
+            var main = this;
+            var margin = main.margin;
+            this.svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+                .call(d3.axisLeft(yScale)
+                .ticks(10));
         };
         return Bar;
     }(regularChart_1.RegularChart));
