@@ -21,123 +21,125 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE          //
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
-var oc_examples = {};
+(function() {
+    var oc_examples = {};
 
-oc_examples.now = Date.now();
-oc_examples.months = new Array("Apples", "Pineapples", "Oranges", "Peaches", "Bananas");
+    oc_examples.now = Date.now();
+    oc_examples.months = new Array("Apples", "Pineapples", "Oranges", "Peaches", "Bananas");
 
-// Pie Data
-oc_examples.pie = function() {
-    return {
-        data: [
-            { label: "Category A", value: Math.random() * 100, color: "#9b3388" },
-            { label: "Category B", value: Math.random() * 100, color: "#4f99fc" },
-            { label: "Category C", value: Math.random() * 100, color: "#fe8a4d" },
-        ]
+    // Pie Data
+    oc_examples.pie = function() {
+        return {
+            data: [
+                { label: "Category A", value: Math.random() * 100, color: "#9b3388" },
+                { label: "Category B", value: Math.random() * 100, color: "#4f99fc" },
+                { label: "Category C", value: Math.random() * 100, color: "#fe8a4d" },
+            ]
+        };
     };
-};
 
-// Bar Data
-oc_examples.bar1 = function() {
-    return {
-        width: 700,
-        height: 350,
-        data: [{
-            title: "Default data",
-            color: "#9b3388",
-            values: (function() {
-                values = [];
-                for (i = 0; i < 4; i++) {
-                    values.push({
-                        label: oc_examples.months[i],
-                        value: Math.random() * 100
-                    });
+    // Bar Data
+    oc_examples.bar1 = function() {
+        return {
+            width: 700,
+            height: 350,
+            data: [{
+                title: "Default data",
+                color: "#9b3388",
+                values: (function() {
+                    values = [];
+                    for (i = 0; i < 4; i++) {
+                        values.push({
+                            label: oc_examples.months[i],
+                            value: Math.random() * 100
+                        });
+                    }
+                    return values;
+                })()
+            }]
+        };
+    };
+
+    // Bar Time X Data
+    oc_examples.bar2 = function() {
+        return {
+            width: 700,
+            height: 350,
+            axis: {
+                x: {
+                    type: "time",
+                    format: "%d/%m",
+                    ticks: 10
                 }
-                return values;
-            })()
-        }]
+            },
+            data: [{
+                title: "Default data",
+                color: "#4f99fc",
+                values: (function() {
+                    values = [];
+                    for (i = 0; i < 20; i++) {
+                        values.push({
+                            label: oc_examples.now + (i * 86400),
+                            value: Math.random() * 100
+                        });
+                    }
+                    return values;
+                })()
+            }]
+        };
     };
-};
 
-// Bar Time X Data
-oc_examples.bar2 = function() {
-    return {
-        width: 700,
-        height: 350,
-        axis: {
-            x: {
-                type: "time",
-                format: "%d/%m",
-                ticks: 10
-            }
-        },
-        data: [{
-            title: "Default data",
-            color: "#4f99fc",
-            values: (function() {
-                values = [];
-                for (i = 0; i < 20; i++) {
-                    values.push({
-                        label: oc_examples.now + (i * 86400),
-                        value: Math.random() * 100
-                    });
-                }
-                return values;
-            })()
-        }]
-    };
-};
+    // Creating Charts
+    require.config({
+        paths: {
+            d3: "../bower_components/d3/d3.min"
+        }
+    });
 
-// Creating Charts
-require.config({
-    paths: {
-        d3: "../bower_components/d3/d3.min"
-    }
-});
+    require(['opencharts'], function(opencharts) {
+        // Pie
+        var pie = new opencharts.Pie("#hola");
+        pie.setSettings(oc_examples.pie());
+        pie.create();
 
-require(['opencharts'], function(opencharts) {
-    // Pie
-    var pie = new opencharts.Pie("#hola");
-    pie.setSettings(oc_examples.pie());
-    pie.create();
+        function updatePie() {
+            setTimeout(function() {
+                pie.setSettings(oc_examples.pie());
+                pie.update();
+                updatePie();
+            }, 3000);
+        }
 
-    function updatePie() {
-        setTimeout(function() {
-            pie.setSettings(oc_examples.pie());
-            pie.update();
-            updatePie();
-        }, 3000);
-    }
+        // Bar
+        var bar = new opencharts.Bar("#hola2");
+        bar.setSettings(oc_examples.bar1());
+        bar.create();
 
-    // Bar
-    var bar = new opencharts.Bar("#hola2");
-    bar.setSettings(oc_examples.bar1());
-    bar.create();
+        function updateBar() {
+            setTimeout(function() {
+                bar.setSettings(oc_examples.bar1());
+                bar.update();
+                updateBar();
+            }, 3000);
+        }
 
-    function updateBar() {
-        setTimeout(function() {
-            bar.setSettings(oc_examples.bar1());
-            bar.update();
-            updateBar();
-        }, 3000);
-    }
+        // Bar2
+        var bar2 = new opencharts.Bar("#hola3");
+        bar2.setSettings(oc_examples.bar2());
+        bar2.create();
 
-    // Bar2
-    var bar2 = new opencharts.Bar("#hola3");
-    bar2.setSettings(oc_examples.bar2());
-    bar2.create();
+        function updateBar2() {
+            setTimeout(function() {
+                bar2.setSettings(oc_examples.bar2());
+                bar2.update();
+                updateBar2();
+            }, 3000);
+        }
 
-    function updateBar2() {
-        setTimeout(function() {
-            bar2.setSettings(oc_examples.bar2());
-            bar2.update();
-            updateBar2();
-        }, 3000);
-    }
+        // Trigger updates
+        updatePie();
+        updateBar();
+        updateBar2();
 
-    // Trigger updates
-    updatePie();
-    updateBar();
-    updateBar2();
-
-});
+    });
+})();

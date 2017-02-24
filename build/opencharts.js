@@ -137,9 +137,9 @@ define("abstract/roundChart", ["require", "exports", "abstract/chart"], function
             legend.append("text")
                 .text(function (d) { return d.label; })
                 .attr("x", function (d, i) {
-                var legendWidth = this.getComputedTextLength();
-                var legendHeight = this.clientHeight;
-                return main.getLegendX(calculatedLegends, i, legendWidth, legendHeight);
+                var dimensions = this.getBoundingClientRect();
+                console.log(dimensions.height);
+                return main.getLegendX(calculatedLegends, i, dimensions.width, dimensions.height);
             })
                 .attr("y", function (d, i) {
                 return main.getLegendY(calculatedLegends, i);
@@ -242,6 +242,7 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
                     .transition()
                     .duration(1000)
                     .ease(d3.easeLinear)
+                    .delay(0)
                     .attr("fill", function (d, i) {
                     return main.getColor(0);
                 })
@@ -411,6 +412,7 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
                     .transition()
                     .duration(1000)
                     .ease(d3.easeLinear)
+                    .delay(0)
                     .attrTween("d", arcTween);
                 main.svg.selectAll(".arc .outer-arc")
                     .data(main.pie(data))

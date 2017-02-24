@@ -148,6 +148,7 @@ export class Pie extends RoundChart {
             .transition()
             .duration(1000)
             .ease(d3.easeLinear)
+            .delay(0)
             .attrTween("d", arcTween);
 
         main.svg.selectAll(".arc .outer-arc")

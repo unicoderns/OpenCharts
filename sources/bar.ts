@@ -262,6 +262,7 @@ export class Bar extends RegularChart {
             .transition()
             .duration(1000)
             .ease(d3.easeLinear)
+            .delay(0)
             .attr("fill", function (d, i) {
                 return main.getColor(0);
             })

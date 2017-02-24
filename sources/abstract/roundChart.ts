@@ -52,9 +52,11 @@ export class RoundChart extends Chart {
         legend.append("text")
             .text(function (d) { return d.label; })
             .attr("x", function (d, i) {
-                let legendWidth = this.getComputedTextLength();
-                let legendHeight = this.clientHeight;
-                return main.getLegendX(calculatedLegends, i, legendWidth, legendHeight);
+                let dimensions = this.getBoundingClientRect();
+                // let legendWidth = this.getComputedTextLength();
+                // let legendHeight = this.clientHeight;
+                console.log(dimensions.height);
+                return main.getLegendX(calculatedLegends, i, dimensions.width, dimensions.height);
             })
             .attr("y", function (d, i) {
                 return main.getLegendY(calculatedLegends, i);
