@@ -98,6 +98,7 @@ declare module "bar" {
         getYScale(height: any): any;
         createXLegends(xScale: any, height: any): void;
         createYLegends(yScale: any): void;
+        update: () => void;
     }
 }
 declare module "pie" {

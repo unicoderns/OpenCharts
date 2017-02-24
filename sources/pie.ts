@@ -94,7 +94,8 @@ export class Pie extends RoundChart {
 
         let g = main.svg.selectAll(".arc")
             .data(main.pie(data))
-            .enter().append("g")
+            .enter()
+            .append("g")
             .classed("arc", true)
             .attr("transform", "translate(" + (canvasWidth / 2) + "," + (radius + legendHeight) + ")")
             .attr("index", function (d, i) { return i; })
@@ -146,6 +147,7 @@ export class Pie extends RoundChart {
             .data(main.pie(data))
             .transition()
             .duration(1000)
+            .ease(d3.easeLinear)
             .attrTween("d", arcTween);
 
         main.svg.selectAll(".arc .outer-arc")
@@ -153,7 +155,6 @@ export class Pie extends RoundChart {
             .attr("d", function (d) {
                 return main.outArc(d);
             });
-
     };
 
 }

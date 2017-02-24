@@ -43,6 +43,8 @@ export class Bar extends RegularChart {
 
     // ==========================================================================================
     // Check and create default settings
+    //
+    // ECMA 5 compatibility
     // ==========================================================================================
     public fillDefaults() {
         let main: Bar = this;
@@ -107,43 +109,15 @@ export class Bar extends RegularChart {
 
         main.svg = main.createSVG();
 
-        // Data scale
-        /*
-                let xScale = d3.scaleTime()
-                    .domain([
-                        new Date(values[0].label * 1000),
-                        d3.timeDay.offset(new Date(values[valuesLength - 1].label * 1000), 1)
-                    ])
-                    .range([0, chartW]);
-        */
         let xScale = main.getXScale(axis.x.type, chartW);
         let yScale = main.getYScale(chartH);
-        /*
-        let yScale = d3.scaleLinear()
-            .domain([
-                d3.max(values, function (d: any) { return d.value; }),
-                d3.min(values, function (d: any) { return d.value; })
-            ])
-            .range([0, chartH]);
-            */
-        /*
-                //Data axis
-                let yAxis = d3.svg.axis()
-                    .scale(yScale)
-                    .orient("left")
-                    .ticks(5);  //Set rough # of ticks
-        
-                let xAxis = d3.svg.axis()
-                    .scale(xScale)
-                    .orient("bottom")
-                    .ticks(10)
-                    .tickFormat(d3.time.format("%d/%m"));
-        */
+
         // Filling SVG with data
         this.svg.selectAll("rect")
-            .data(values)
+            .data(values, function (d) { return d.value; })
             .enter()
             .append("rect")
+            .attr("class", "bar")
             .attr("fill", function (d, i) {
                 return main.getColor(0);
             })
@@ -155,7 +129,7 @@ export class Bar extends RegularChart {
             })
             .attr("width", barWidth)
             .attr("height", function (d) {
-                return yScale(d.value);
+                return yScale(d.value) || 0;
             });
 
         this.createXLegends(xScale, height);
@@ -252,34 +226,55 @@ export class Bar extends RegularChart {
             );
     }
 
-    /*
-    
-        public update = function () {
-            // Main OpenCharts object
-            let main: Pie = this;
-    
-            function arcTween(a) {
-                let i = d3.interpolate(this._current, a);
-                this._current = i(0);
-                return function (t) {
-                    return main.arc(i(t));
-                };
-            }
-    
-            main.svg.selectAll(".arc .inner-arc")
-                .data(main.pie(main.dataArray))
-                .transition()
-                .duration(1000)
-                .attrTween("d", arcTween);
-    
-            main.svg.selectAll(".arc .outer-arc")
-                .data(main.pie(main.dataArray))
-                .on("end", function() { console.log("all done"); })
-                .attr("d", function (d) {
-                    return main.outArc(d);
-                });
-    
-        };
-    
-    */
+    public update = function () {
+        // Main OpenCharts object
+        let main: Bar = this;
+
+        this.fillDefaults();
+
+        let settings = main.settings;
+        let data = settings.data[0];
+
+        let axis = settings.axis;
+
+        let width = main.getCanvasWidth();
+        let height = main.getCanvasHeight();
+
+        // Configuration lets
+        let values = data.values;
+        let valuesLength = values.length;
+
+        let margin = this.margin;
+        let chartW = width - (margin.left + margin.right);
+        let chartH = height - (margin.top + margin.bottom);
+        let gap = 2;
+
+        let barWidth = (chartW / valuesLength) - gap;
+
+        let xScale = main.getXScale(axis.x.type, chartW);
+        let yScale = main.getYScale(chartH);
+
+        // Filling SVG with data
+        //        main.bar
+        //            .data(data)
+        this.svg.selectAll("rect")
+            .data(values)
+            .transition()
+            .duration(1000)
+            .ease(d3.easeLinear)
+            .attr("fill", function (d, i) {
+                return main.getColor(0);
+            })
+            .attr("x", function (d, i) {
+                return gap + i * (barWidth + gap) + margin.left;
+            })
+            .attr("y", function (d) {
+                return (chartH + margin.top) - yScale(d.value);  // Height minus data value
+            })
+            .attr("width", barWidth)
+            .attr("height", function (d) {
+                return yScale(d.value) || 0;
+            });
+    };
+
 }

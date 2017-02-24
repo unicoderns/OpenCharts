@@ -38,47 +38,55 @@ oc_examples.pie = function() {
 };
 
 // Bar Data
-oc_examples.bar1 = {
-    width: 700,
-    height: 350,
-    data: [{
-        title: "Default data",
-        color: "#9b3388",
-        values: []
-    }]
+oc_examples.bar1 = function() {
+    return {
+        width: 700,
+        height: 350,
+        data: [{
+            title: "Default data",
+            color: "#9b3388",
+            values: (function() {
+                values = [];
+                for (i = 0; i < 4; i++) {
+                    values.push({
+                        label: oc_examples.months[i],
+                        value: Math.random() * 100
+                    });
+                }
+                return values;
+            })()
+        }]
+    };
 };
-
-for (i = 0; i < 4; i++) {
-    oc_examples.bar1.data[0].values.push({
-        label: oc_examples.months[i],
-        value: Math.random() * 100
-    });
-}
 
 // Bar Time X Data
-oc_examples.bar2 = {
-    width: 700,
-    height: 350,
-    axis: {
-        x: {
-            type: "time",
-            format: "%d/%m",
-            ticks: 10
-        }
-    },
-    data: [{
-        title: "Default data",
-        color: "#4f99fc",
-        values: []
-    }]
+oc_examples.bar2 = function() {
+    return {
+        width: 700,
+        height: 350,
+        axis: {
+            x: {
+                type: "time",
+                format: "%d/%m",
+                ticks: 10
+            }
+        },
+        data: [{
+            title: "Default data",
+            color: "#4f99fc",
+            values: (function() {
+                values = [];
+                for (i = 0; i < 20; i++) {
+                    values.push({
+                        label: oc_examples.now + (i * 86400),
+                        value: Math.random() * 100
+                    });
+                }
+                return values;
+            })()
+        }]
+    };
 };
-
-for (i = 0; i < 20; i++) {
-    oc_examples.bar2.data[0].values.push({
-        label: oc_examples.now + (i * 86400),
-        value: Math.random() * 100
-    });
-}
 
 // Creating Charts
 require.config({
@@ -93,23 +101,43 @@ require(['opencharts'], function(opencharts) {
     pie.setSettings(oc_examples.pie());
     pie.create();
 
-    function update() {
+    function updatePie() {
         setTimeout(function() {
             pie.setSettings(oc_examples.pie());
             pie.update();
-            update();
+            updatePie();
         }, 3000);
     }
-    update();
 
     // Bar
     var bar = new opencharts.Bar("#hola2");
-    bar.setSettings(oc_examples.bar1);
+    bar.setSettings(oc_examples.bar1());
     bar.create();
+
+    function updateBar() {
+        setTimeout(function() {
+            bar.setSettings(oc_examples.bar1());
+            bar.update();
+            updateBar();
+        }, 3000);
+    }
 
     // Bar2
     var bar2 = new opencharts.Bar("#hola3");
-    bar2.setSettings(oc_examples.bar2);
+    bar2.setSettings(oc_examples.bar2());
     bar2.create();
+
+    function updateBar2() {
+        setTimeout(function() {
+            bar2.setSettings(oc_examples.bar2());
+            bar2.update();
+            updateBar2();
+        }, 3000);
+    }
+
+    // Trigger updates
+    updatePie();
+    updateBar();
+    updateBar2();
 
 });

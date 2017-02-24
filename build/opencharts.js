@@ -78,6 +78,7 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
                 .attr("height", height)
                 .attr("preserveAspectRatio", "xMinYMin meet")
                 .attr("viewBox", "0 0 " + width + " " + height)
+                .classed("openchart", true)
                 .classed("svg-content-responsive", true);
         };
         ;
@@ -219,6 +220,42 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
         __extends(Bar, _super);
         function Bar(selector) {
             var _this = _super.call(this, selector) || this;
+            _this.update = function () {
+                var main = this;
+                this.fillDefaults();
+                var settings = main.settings;
+                var data = settings.data[0];
+                var axis = settings.axis;
+                var width = main.getCanvasWidth();
+                var height = main.getCanvasHeight();
+                var values = data.values;
+                var valuesLength = values.length;
+                var margin = this.margin;
+                var chartW = width - (margin.left + margin.right);
+                var chartH = height - (margin.top + margin.bottom);
+                var gap = 2;
+                var barWidth = (chartW / valuesLength) - gap;
+                var xScale = main.getXScale(axis.x.type, chartW);
+                var yScale = main.getYScale(chartH);
+                this.svg.selectAll("rect")
+                    .data(values)
+                    .transition()
+                    .duration(1000)
+                    .ease(d3.easeLinear)
+                    .attr("fill", function (d, i) {
+                    return main.getColor(0);
+                })
+                    .attr("x", function (d, i) {
+                    return gap + i * (barWidth + gap) + margin.left;
+                })
+                    .attr("y", function (d) {
+                    return (chartH + margin.top) - yScale(d.value);
+                })
+                    .attr("width", barWidth)
+                    .attr("height", function (d) {
+                    return yScale(d.value) || 0;
+                });
+            };
             _this.margin = { top: 1, right: 0, bottom: 18, left: 22 };
             return _this;
         }
@@ -266,9 +303,10 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             var xScale = main.getXScale(axis.x.type, chartW);
             var yScale = main.getYScale(chartH);
             this.svg.selectAll("rect")
-                .data(values)
+                .data(values, function (d) { return d.value; })
                 .enter()
                 .append("rect")
+                .attr("class", "bar")
                 .attr("fill", function (d, i) {
                 return main.getColor(0);
             })
@@ -280,7 +318,7 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             })
                 .attr("width", barWidth)
                 .attr("height", function (d) {
-                return yScale(d.value);
+                return yScale(d.value) || 0;
             });
             this.createXLegends(xScale, height);
             this.createYLegends(yScale);
@@ -372,6 +410,7 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
                     .data(main.pie(data))
                     .transition()
                     .duration(1000)
+                    .ease(d3.easeLinear)
                     .attrTween("d", arcTween);
                 main.svg.selectAll(".arc .outer-arc")
                     .data(main.pie(data))
@@ -415,7 +454,8 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
             main.outArc = d3.arc().innerRadius(radius).outerRadius(radius - 6);
             var g = main.svg.selectAll(".arc")
                 .data(main.pie(data))
-                .enter().append("g")
+                .enter()
+                .append("g")
                 .classed("arc", true)
                 .attr("transform", "translate(" + (canvasWidth / 2) + "," + (radius + legendHeight) + ")")
                 .attr("index", function (d, i) { return i; })

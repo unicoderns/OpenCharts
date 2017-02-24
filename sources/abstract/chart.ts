@@ -102,6 +102,7 @@ export class Chart {
             .attr("height", height)
             .attr("preserveAspectRatio", "xMinYMin meet")
             .attr("viewBox", "0 0 " + width + " " + height)
+            .classed("openchart", true)
             .classed("svg-content-responsive", true);
     };
 
