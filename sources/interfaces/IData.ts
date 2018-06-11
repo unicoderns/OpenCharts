@@ -1,4 +1,4 @@
-export interface IPie {
+export default interface IData {
     label: string;
     value: number;
 }

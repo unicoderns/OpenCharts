@@ -25,12 +25,13 @@
 
 import { RegularChart } from "./abstract/regularChart";
 import * as d3 from "d3";
-import * as IData from "./interfaces/IData";
 import * as IAxis from "./interfaces/IAxis";
+
+import IData from "./interfaces/IData";
 
 export class Bar extends RegularChart {
 
-    protected svg;
+    protected svg: d3.Selection<SVGElement, {}, HTMLElement, any>;
     protected bar;
 
     // ------------------------------------------------------------------------------------------
@@ -42,49 +43,12 @@ export class Bar extends RegularChart {
     }
 
     // ==========================================================================================
-    // Check and create default settings
-    //
-    // ECMA 5 compatibility
-    // ==========================================================================================
-    public fillDefaults() {
-        let main: Bar = this;
-
-        // Default data
-        if (main.settings.axis === undefined) {
-            main.settings.axis = {
-            };
-        }
-        if (main.settings.axis.x === undefined) {
-            main.settings.axis.x = {
-            };
-        }
-        if (main.settings.axis.x.ticks === undefined) {
-            main.settings.axis.x.ticks = 10;
-        }
-
-        // Defining default types for X axis
-        if (main.settings.axis.x.type === undefined) {
-            main.settings.axis.x.type = IAxis.X.string;
-        }
-        if (main.settings.axis.x.type === "string") {
-            main.settings.axis.x.type = IAxis.X.string;
-        }
-        if (main.settings.axis.x.type === "time") {
-            main.settings.axis.x.type = IAxis.X.time;
-
-            if (main.settings.axis.x.format === undefined) {
-                main.settings.axis.x.format = "%m/%d/%y";
-            }
-        }
-    }
-
-
-    // ==========================================================================================
     // Create bar chart
     // ==========================================================================================
     public create() {
         // Main OpenCharts object
         let main: Bar = this;
+
         // Filling missing data
         this.fillDefaults();
 
@@ -114,7 +78,7 @@ export class Bar extends RegularChart {
 
         // Filling SVG with data
         this.svg.selectAll("rect")
-            .data(values, function (d) { return d.value; })
+            .data(values)
             .enter()
             .append("rect")
             .attr("class", "bar")
@@ -124,63 +88,17 @@ export class Bar extends RegularChart {
             .attr("x", function (d, i) {
                 return gap + i * (barWidth + gap) + margin.left;
             })
-            .attr("y", function (d) {
+            .attr("y", function (d: IData) {
                 return (chartH + margin.top) - yScale(d.value);  // Height minus data value
             })
             .attr("width", barWidth)
-            .attr("height", function (d) {
+            .attr("height", function (d: IData) {
                 return yScale(d.value) || 0;
             });
 
         this.createXLegends(xScale, height);
         this.createYLegends(yScale);
     };
-
-    // ==========================================================================================
-    // Scale for X Axis
-    // ==========================================================================================
-    public getXScale(type: IAxis.X, width) {
-        let scale;
-        let values = this.settings.data[0].values;
-        let labels = [];
-
-        if (type === IAxis.X.time) {
-            scale = d3.scaleTime()
-                .domain([
-                    new Date(values[0].label * 1000),
-                    d3.timeDay.offset(new Date(values[values.length - 1].label * 1000), 1)
-                ])
-                .range([0, width]);
-        } else {
-            values.forEach(function (item) {
-                labels.push(item.label);
-            });
-
-            scale = d3.scaleBand()
-                // values.map(function (d) { return d.label; }) 
-                .domain(labels)
-                .rangeRound([0, width]);
-        }
-
-        return scale;
-    }
-
-    // ==========================================================================================
-    // Scale for Y Axis
-    // ==========================================================================================
-    public getYScale(height) {
-        let scale;
-        let values = this.settings.data[0].values;
-
-        scale = d3.scaleLinear()
-            .domain([
-                d3.max(values, function (d: IData.IPie) { return d.value; }),
-                d3.min(values, function (d: IData.IPie) { return d.value; })
-            ])
-            .range([0, height]);
-
-        return scale;
-    }
 
     // ==========================================================================================
     // Create legend for X Axis
@@ -193,7 +111,7 @@ export class Bar extends RegularChart {
         if (axis.x.type === IAxis.X.time) {
             // Create X axis
             this.svg.append("g")
-                .attr("class", "axis")
+                .attr("class", "x axis")
                 .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
                 .call(d3.axisBottom(xScale)
                     .ticks(axis.x.ticks)
@@ -202,13 +120,12 @@ export class Bar extends RegularChart {
         } else {
             // Create X axis
             this.svg.append("g")
-                .attr("class", "axis")
+                .attr("class", "x axis")
                 .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
                 .call(d3.axisBottom(xScale)
                     .ticks(axis.x.ticks)
                 );
         }
-
     }
 
     // ==========================================================================================
@@ -219,7 +136,7 @@ export class Bar extends RegularChart {
         let margin = main.margin;
         // Create Y axis
         this.svg.append("g")
-            .attr("class", "axis")
+            .attr("class", "y axis")
             .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
             .call(d3.axisLeft(yScale)
                 .ticks(10)
@@ -269,11 +186,11 @@ export class Bar extends RegularChart {
             .attr("x", function (d, i) {
                 return gap + i * (barWidth + gap) + margin.left;
             })
-            .attr("y", function (d) {
+            .attr("y", function (d: IData) {
                 return (chartH + margin.top) - yScale(d.value);  // Height minus data value
             })
             .attr("width", barWidth)
-            .attr("height", function (d) {
+            .attr("height", function (d: IData) {
                 return yScale(d.value) || 0;
             });
     };

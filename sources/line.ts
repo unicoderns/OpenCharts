@@ -22,18 +22,18 @@
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-import * as d3 from "d3";
 
-import { RoundChart } from "./abstract/roundChart";
+import * as d3 from "d3";
+import * as IAxis from "./interfaces/IAxis";
+
+import { RegularChart } from "./abstract/regularChart";
 
 import IData from "./interfaces/IData";
 
-export class Pie extends RoundChart {
+export class Line extends RegularChart {
 
-    protected arc: d3.Arc<Pie, d3.DefaultArcObject>;
-    protected outArc: d3.Arc<Pie, d3.DefaultArcObject>;
-    protected svg: any; //d3.Selection<SVGElement, {}, HTMLElement, any>; * Patch to add object current d required
-    protected pie;
+    protected svg: d3.Selection<SVGElement, {}, HTMLElement, any>
+    protected line;
 
     // ------------------------------------------------------------------------------------------
     // Constructor
@@ -41,106 +41,75 @@ export class Pie extends RoundChart {
     constructor(selector) {
         super(selector);
         /**
+        * Margin default
+        */
+        this.margin = { top: 8, right: 0, bottom: 18, left: 42 };
+        /**
         * Create SVG
         */
         this.svg = this.createSVG();
     }
 
     // ==========================================================================================
-    // Create pie chart
+    // Create bar chart
     // ==========================================================================================
     public create() {
         /**
         * This local reference
         */
-        let main: Pie = this;
+        let main: Line = this;
 
         /**
         * References
         */
         let chartName = main.selector + "-chart";
+        let settings = main.settings;
+        let axis = settings.axis;
+        let margin = this.margin;
 
         /**
         * Basic calculations
         */
-        let canvasWidth = main.getCanvasWidth();
-        let canvasHeight = main.getCanvasHeight();
+        let width = main.getCanvasWidth();
+        let height = main.getCanvasHeight();
+        let chartW = width - (margin.left + margin.right);
+        let chartH = height - (margin.top + margin.bottom);
 
         /**
         * Data manipulation
         */
-        let data = main.settings.data;
+        let data = settings.data[0];
+        let values = data.values;
+        let valuesLength = values.length;
 
         /**
-        * Legend management
+        * Data calculations
         */
-        let calculatedLegends = main.createSVGLegends(main.svg);
-        let legendHeight = calculatedLegends.height + 10; // 10px margin
-        canvasHeight = canvasHeight - legendHeight; // Removing size of legends
+        let column = (chartW / valuesLength);
 
         /**
-        * Radius calculation
+        * Filling missing data
         */
-        let radius = Math.min(canvasWidth, canvasHeight) / 2;
+        this.fillDefaults();
 
         /**
-        * Arc generators
+        * SVG creation
         */
-        main.arc = d3.arc().outerRadius(radius - 10).innerRadius(0);
-        main.outArc = d3.arc().innerRadius(radius).outerRadius(radius - 6);
+        main.svg = main.createSVG();
 
         /**
-        * Base functions
+        * Other calculations
         */
-        main.pie = d3.pie<IData>().value(function (d) {
-            return d.value;
-        });
+        let xScale = main.getXScale(axis.x.type, chartW);
+        let yScale = main.getYScale(chartH);
+
+        var line: any = d3.line()
+            .x(function (d: any) { return xScale(d.label) + (column / 2); })
+            .y(function (d: any) { return yScale(d.value) + margin.top; })
+            .curve(d3.curveMonotoneX);
 
         /**
-        * Base svg manipulation
-        */
-        let g = main.svg.selectAll(".arc")
-            .data(main.pie(data))
-            .enter()
-            .append("g")
-            .classed("arc", true)
-            .attr("transform", "translate(" + (canvasWidth / 2) + "," + (radius + legendHeight) + ")")
-            .attr("index", function (d, i) { return i; })
-            .attr("color", function (d, i) {
-                return main.getColor(i);
-            });
-
-        /**
-        * Adding inner arc
-        */
-        g.append("path")
-            .attr("class", function (d, i) {
-                return "inner-arc pie-" + chartName + "-arc-index-" + i; /////********
-            })
-            .attr("fill", function (d, i) {
-                return main.getColor(i);
-            })
-            .attr("d", function (d: d3.DefaultArcObject) {
-                return main.arc(d);
-            })
-            .each(function (d) { this.current = d; }); // store the initial angles
-
-        /**
-        * Adding outer arc
-        */
-        g.append("path")
-            .attr("class", function (d, i) {
-                return "outer-arc pie-outer-arc pie-outer-" + chartName + "-arc-index-" + i;
-            })
-            .attr("fill", "#ffffff")
-            .attr("d", function (d: d3.DefaultArcObject) {
-                // log the result of the arc generator to show how cool it is :)
-                return main.outArc(d);
-            })
-            .each(function (d) { this.current = d; }); // store the initial angles
-
-        /**
-        * Adding mouse effects
+        * Effects
         */
         let synchronizedMouseOver = function () {
             let arc = d3.select(this);
@@ -153,7 +122,6 @@ export class Pie extends RoundChart {
         };
 
         let synchronizedMouseOut = function () {
-
             let arc = d3.select(this);
             let index = arc.attr("index");
 
@@ -163,36 +131,52 @@ export class Pie extends RoundChart {
                 .classed("animate", false);
         };
 
-        g.on("mouseover", synchronizedMouseOver)
+        main.svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
+            .call(d3.axisBottom(xScale)); // Create an axis component with d3.axisBottom
+
+        main.svg.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+            .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
+
+        // Create line
+        main.svg.append("path")
+            .datum(values)
+            .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+            .attr("class", "line") // Assign a class for styling
+            .attr("d", line);
+
+        // Create dots
+        main.svg.selectAll(".dot")
+            .data(values)
+            .enter().append("circle") // Uses the enter().append() method
+            .attr("cx", function (d: IData) { return xScale(d.label) + (column / 2) })
+            .attr("cy", function (d: IData) { return yScale(d.value) + margin.top })
+            .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+            .attr("stroke", function (d, i) {
+                return main.getColor(0);
+            })
+            .attr("fill", "#fff")
+            .attr("stroke-width", "2")
+            .attr("r", 12);
+
+        main.svg.selectAll(".dotSelected")
+            .data(values)
+            .enter().append("circle") // Uses the enter().append() method
+            .attr("cx", function (d: IData) { return xScale(d.label) + (column / 2) })
+            .attr("cy", function (d: IData) { return yScale(d.value) + margin.top })
+            .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+            .attr("fill", function (d, i) {
+                return main.getColor(0);
+            })
+            .attr("stroke", "#fff")
+            .attr("stroke-width", "2")
+            .attr("r", 6)
+            .on("mouseover", synchronizedMouseOver)
             .on("mouseout", synchronizedMouseOut);
-    };
 
-    public update = function () {
-        // Main OpenCharts object
-        let main: Pie = this;
-        let data = main.settings.data;
-
-        function arcTween(a) {
-            let i = d3.interpolate(this.current, a);
-            this.current = i(0);
-            return function (t) {
-                return main.arc(i(t));
-            };
-        }
-
-        main.svg.selectAll(".arc .inner-arc")
-            .data(main.pie(data))
-            .transition()
-            .duration(1000)
-            .ease(d3.easeLinear)
-            .delay(0)
-            .attrTween("d", arcTween);
-
-        main.svg.selectAll(".arc .outer-arc")
-            .data(main.pie(data))
-            .attr("d", function (d: d3.DefaultArcObject) {
-                return main.outArc(d);
-            });
     };
 
 }
