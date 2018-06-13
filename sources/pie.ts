@@ -43,7 +43,7 @@ export class Pie extends RoundChart {
         /**
         * Create SVG
         */
-        this.svg = this.createSVG();
+        this.svg = this.createSVG("piechart");
     }
 
     // ==========================================================================================
@@ -104,6 +104,7 @@ export class Pie extends RoundChart {
             .enter()
             .append("g")
             .classed("arc", true)
+            .classed("hover", true)
             .attr("transform", "translate(" + (canvasWidth / 2) + "," + (radius + legendHeight) + ")")
             .attr("index", function (d, i) { return i; })
             .attr("color", function (d, i) {
@@ -148,7 +149,8 @@ export class Pie extends RoundChart {
             let color = arc.attr("color");
 
             let arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-            d3.selectAll(arcSelector).style("fill", color)
+            d3.selectAll(arcSelector)
+                .style("fill", color)
                 .classed("animate", true);
         };
 
@@ -158,8 +160,8 @@ export class Pie extends RoundChart {
             let index = arc.attr("index");
 
             let arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-            let selectedArc = d3.selectAll(arcSelector);
-            selectedArc.style("fill", "#ffffff")
+            let selectedArc = d3.selectAll(arcSelector)
+                .style("fill", "#ffffff")
                 .classed("animate", false);
         };
 

@@ -44,10 +44,6 @@ export class Line extends RegularChart {
         * Margin default
         */
         this.margin = { top: 8, right: 0, bottom: 18, left: 42 };
-        /**
-        * Create SVG
-        */
-        this.svg = this.createSVG();
     }
 
     // ==========================================================================================
@@ -64,7 +60,7 @@ export class Line extends RegularChart {
         */
         let chartName = main.selector + "-chart";
         let settings = main.settings;
-        let axis = settings.axis;
+        let axis = settings.axis || { x: {} };
         let margin = this.margin;
 
         /**
@@ -95,7 +91,7 @@ export class Line extends RegularChart {
         /**
         * SVG creation
         */
-        main.svg = main.createSVG();
+        main.svg = main.createSVG("linechart");
 
         /**
         * Other calculations
@@ -114,21 +110,23 @@ export class Line extends RegularChart {
         let synchronizedMouseOver = function () {
             let arc = d3.select(this);
             let index = arc.attr("index");
-            let color = arc.attr("color");
 
-            let arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-            d3.selectAll(arcSelector).style("fill", color)
-                .classed("animate", true);
+            let arcSelector = "." + "outer-line-dot-" + chartName + "-dot-index-" + index;
+            d3.selectAll(arcSelector).transition().duration(400).delay(0)
+                .attr("r", 12)
+                .attr("stroke", function (d, i) {
+                    return main.getColor(0);
+                });
         };
 
         let synchronizedMouseOut = function () {
             let arc = d3.select(this);
             let index = arc.attr("index");
 
-            let arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-            let selectedArc = d3.selectAll(arcSelector);
-            selectedArc.style("fill", "#ffffff")
-                .classed("animate", false);
+            let arcSelector = "." + "outer-line-dot-" + chartName + "-dot-index-" + index;
+            d3.selectAll(arcSelector).transition().duration(100).delay(0)
+                .attr("r", 0)
+                .attr("stroke", "#fff");
         };
 
         main.svg.append("g")
@@ -144,8 +142,8 @@ export class Line extends RegularChart {
         // Create line
         main.svg.append("path")
             .datum(values)
+            .classed("line", true)
             .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
-            .attr("class", "line") // Assign a class for styling
             .attr("d", line);
 
         // Create dots
@@ -155,27 +153,104 @@ export class Line extends RegularChart {
             .attr("cx", function (d: IData) { return xScale(d.label) + (column / 2) })
             .attr("cy", function (d: IData) { return yScale(d.value) + margin.top })
             .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+            .attr("class", function (d: IData, i) {
+                return "line-dot outer-line-dot outer-line-dot-" + chartName + "-dot-index-" + i;
+            })
             .attr("stroke", function (d, i) {
                 return main.getColor(0);
             })
             .attr("fill", "#fff")
             .attr("stroke-width", "2")
-            .attr("r", 12);
+            .attr("r", 0);
 
         main.svg.selectAll(".dotSelected")
             .data(values)
             .enter().append("circle") // Uses the enter().append() method
+            .classed("line-dot", true)
+            .classed("inner-line-dot", true)
             .attr("cx", function (d: IData) { return xScale(d.label) + (column / 2) })
             .attr("cy", function (d: IData) { return yScale(d.value) + margin.top })
             .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+            .attr("index", function (d: IData, i) { return i; })
             .attr("fill", function (d, i) {
                 return main.getColor(0);
             })
             .attr("stroke", "#fff")
-            .attr("stroke-width", "2")
-            .attr("r", 6)
+            .attr("stroke-width", "4")
+            .attr("r", 7)
             .on("mouseover", synchronizedMouseOver)
             .on("mouseout", synchronizedMouseOut);
+
+    };
+
+
+    public update = function () {
+        /**
+        * This local reference
+        */
+        let main: Line = this;
+
+        /**
+        * References
+        */
+        let settings = main.settings;
+        let margin = this.margin;
+        let axis = settings.axis || { x: {} };
+
+        /**
+        * Basic calculations
+        */
+        let width = main.getCanvasWidth();
+        let height = main.getCanvasHeight();
+        let chartW = width - (margin.left + margin.right);
+        let chartH = height - (margin.top + margin.bottom);
+
+        /**
+         * Data manipulation
+         */
+        let data = settings.data[0];
+        let values = data.values;
+        let valuesLength = values.length;
+
+        /**
+        * Data calculations
+        */
+        let column = (chartW / valuesLength);
+
+        /**
+        * Other calculations
+        */
+        let xScale = main.getXScale(axis.x.type, chartW);
+        let yScale = main.getYScale(chartH);
+
+        var line: any = d3.line()
+            .x(function (d: any) { return xScale(d.label) + (column / 2); })
+            .y(function (d: any) { return yScale(d.value) + margin.top; })
+            .curve(d3.curveMonotoneX);
+
+        // Create line
+        main.svg.selectAll("path.line")
+            .datum(values)
+            .transition()
+            .duration(1000)
+            .ease(d3.easeLinear)
+            .delay(0)
+            .attr("d", line);
+
+        main.svg.selectAll(".outer-line-dot")
+            .data(values)
+            .attr("r", 0)
+            .attr("cx", function (d: IData) { return xScale(d.label) + (column / 2) })
+            .attr("cy", function (d: IData) { return yScale(d.value) + margin.top });
+
+        main.svg.selectAll(".inner-line-dot")
+            .data(values)
+            .transition()
+            .duration(1000)
+            .ease(d3.easeLinear)
+            .delay(0)
+            .attr("cx", function (d: IData) { return xScale(d.label) + (column / 2) })
+            .attr("cy", function (d: IData) { return yScale(d.value) + margin.top });
 
     };
 

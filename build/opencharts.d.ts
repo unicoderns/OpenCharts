@@ -52,7 +52,7 @@ declare module "abstract/chart" {
         };
         constructor(selector: any);
         setSettings(settings: any): void;
-        protected createSVG(): any;
+        protected createSVG(type: string): any;
         protected getCanvasWidth(): number;
         protected getCanvasHeight(): number;
         protected getColor(index: number): string;
@@ -110,6 +110,7 @@ declare module "line" {
         protected line: any;
         constructor(selector: any);
         create(): void;
+        update: () => void;
     }
 }
 declare module "pie" {

@@ -174,10 +174,19 @@
         line.setSettings(oc_examples.line1());
         line.create();
 
+        function updateLine1() {
+            setTimeout(function () {
+                line.setSettings(oc_examples.line1());
+                line.update();
+                updateLine1();
+            }, 3000);
+        }
+        
         // Trigger updates
         updatePie();
         updateBar();
         updateBar2();
+        updateLine1();
 
     });
 })();

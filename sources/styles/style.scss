@@ -8,11 +8,16 @@
         width: 100%;
         height: initial;
     }
+    .animate {
+        -webkit-transition: all 0.4s ease-in-out;
+        -moz-transition: all 0.4s ease-in-out;
+        -o-transition: all 0.4s ease-in-out;
+        transition: all 0.4s ease-in-out;
+    }
     .legend {
         font-size: 14px;
     }
-    .arc,
-    .bar {
+    .hover {
         opacity: 1;
         -webkit-transition: all 0.4s ease-in-out;
         -moz-transition: all 0.4s ease-in-out;
@@ -22,23 +27,19 @@
             opacity: 0.8;
         }
     }
-    .pie-outer-arc {
-        opacity: 0.4;
-    }
-    .outer-arc.animate {
-        -webkit-transition: all 0.4s ease-in-out;
-        -moz-transition: all 0.4s ease-in-out;
-        -o-transition: all 0.4s ease-in-out;
-        transition: all 0.4s ease-in-out;
-    }
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: black;
-        shape-rendering: crispEdges;
-    }
-    .axis text {
-        font-family: sans-serif;
-        font-size: 11px;
+    &.piechart {
+        .pie-outer-arc {
+            opacity: 0.4;
+        }
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+        .axis text {
+            font-family: sans-serif;
+            font-size: 11px;
+        }
     }
 }

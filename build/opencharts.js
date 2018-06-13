@@ -76,7 +76,7 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
                 console.error("Opencharts error: no data provided");
             }
         };
-        Chart.prototype.createSVG = function () {
+        Chart.prototype.createSVG = function (type) {
             var width = this.width;
             var height = this.height;
             return d3.select("#" + this.selector)
@@ -86,6 +86,7 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
                 .attr("preserveAspectRatio", "xMinYMin meet")
                 .attr("viewBox", "0 0 " + width + " " + height)
                 .classed("openchart", true)
+                .classed(type, true)
                 .classed("svg-content-responsive", true);
         };
         ;
@@ -334,7 +335,7 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             this.fillDefaults();
             var settings = main.settings;
             var data = settings.data[0];
-            var axis = settings.axis;
+            var axis = settings.axis || { x: {} };
             var width = main.getCanvasWidth();
             var height = main.getCanvasHeight();
             var values = data.values;
@@ -345,14 +346,15 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             var gap = 2;
             var barWidth = (chartW / valuesLength) - gap;
             var chartName = main.selector + "-chart";
-            main.svg = main.createSVG();
+            main.svg = main.createSVG("barchart");
             var xScale = main.getXScale(axis.x.type, chartW);
             var yScale = main.getYScale(chartH);
             this.svg.selectAll("rect")
                 .data(values)
                 .enter()
                 .append("rect")
-                .attr("class", "bar")
+                .classed("bar", true)
+                .classed("hover", true)
                 .attr("fill", function (d, i) {
                 return main.getColor(0);
             })
@@ -410,15 +412,54 @@ define("line", ["require", "exports", "d3", "abstract/regularChart"], function (
         __extends(Line, _super);
         function Line(selector) {
             var _this = _super.call(this, selector) || this;
+            _this.update = function () {
+                var main = this;
+                var settings = main.settings;
+                var margin = this.margin;
+                var axis = settings.axis || { x: {} };
+                var width = main.getCanvasWidth();
+                var height = main.getCanvasHeight();
+                var chartW = width - (margin.left + margin.right);
+                var chartH = height - (margin.top + margin.bottom);
+                var data = settings.data[0];
+                var values = data.values;
+                var valuesLength = values.length;
+                var column = (chartW / valuesLength);
+                var xScale = main.getXScale(axis.x.type, chartW);
+                var yScale = main.getYScale(chartH);
+                var line = d3.line()
+                    .x(function (d) { return xScale(d.label) + (column / 2); })
+                    .y(function (d) { return yScale(d.value) + margin.top; })
+                    .curve(d3.curveMonotoneX);
+                main.svg.selectAll("path.line")
+                    .datum(values)
+                    .transition()
+                    .duration(1000)
+                    .ease(d3.easeLinear)
+                    .delay(0)
+                    .attr("d", line);
+                main.svg.selectAll(".outer-line-dot")
+                    .data(values)
+                    .attr("r", 0)
+                    .attr("cx", function (d) { return xScale(d.label) + (column / 2); })
+                    .attr("cy", function (d) { return yScale(d.value) + margin.top; });
+                main.svg.selectAll(".inner-line-dot")
+                    .data(values)
+                    .transition()
+                    .duration(1000)
+                    .ease(d3.easeLinear)
+                    .delay(0)
+                    .attr("cx", function (d) { return xScale(d.label) + (column / 2); })
+                    .attr("cy", function (d) { return yScale(d.value) + margin.top; });
+            };
             _this.margin = { top: 8, right: 0, bottom: 18, left: 42 };
-            _this.svg = _this.createSVG();
             return _this;
         }
         Line.prototype.create = function () {
             var main = this;
             var chartName = main.selector + "-chart";
             var settings = main.settings;
-            var axis = settings.axis;
+            var axis = settings.axis || { x: {} };
             var margin = this.margin;
             var width = main.getCanvasWidth();
             var height = main.getCanvasHeight();
@@ -429,7 +470,7 @@ define("line", ["require", "exports", "d3", "abstract/regularChart"], function (
             var valuesLength = values.length;
             var column = (chartW / valuesLength);
             this.fillDefaults();
-            main.svg = main.createSVG();
+            main.svg = main.createSVG("linechart");
             var xScale = main.getXScale(axis.x.type, chartW);
             var yScale = main.getYScale(chartH);
             var line = d3.line()
@@ -439,18 +480,20 @@ define("line", ["require", "exports", "d3", "abstract/regularChart"], function (
             var synchronizedMouseOver = function () {
                 var arc = d3.select(this);
                 var index = arc.attr("index");
-                var color = arc.attr("color");
-                var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-                d3.selectAll(arcSelector).style("fill", color)
-                    .classed("animate", true);
+                var arcSelector = "." + "outer-line-dot-" + chartName + "-dot-index-" + index;
+                d3.selectAll(arcSelector).transition().duration(400).delay(0)
+                    .attr("r", 12)
+                    .attr("stroke", function (d, i) {
+                    return main.getColor(0);
+                });
             };
             var synchronizedMouseOut = function () {
                 var arc = d3.select(this);
                 var index = arc.attr("index");
-                var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-                var selectedArc = d3.selectAll(arcSelector);
-                selectedArc.style("fill", "#ffffff")
-                    .classed("animate", false);
+                var arcSelector = "." + "outer-line-dot-" + chartName + "-dot-index-" + index;
+                d3.selectAll(arcSelector).transition().duration(100).delay(0)
+                    .attr("r", 0)
+                    .attr("stroke", "#fff");
             };
             main.svg.append("g")
                 .attr("class", "x axis")
@@ -462,8 +505,8 @@ define("line", ["require", "exports", "d3", "abstract/regularChart"], function (
                 .call(d3.axisLeft(yScale));
             main.svg.append("path")
                 .datum(values)
+                .classed("line", true)
                 .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
-                .attr("class", "line")
                 .attr("d", line);
             main.svg.selectAll(".dot")
                 .data(values)
@@ -471,24 +514,30 @@ define("line", ["require", "exports", "d3", "abstract/regularChart"], function (
                 .attr("cx", function (d) { return xScale(d.label) + (column / 2); })
                 .attr("cy", function (d) { return yScale(d.value) + margin.top; })
                 .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+                .attr("class", function (d, i) {
+                return "line-dot outer-line-dot outer-line-dot-" + chartName + "-dot-index-" + i;
+            })
                 .attr("stroke", function (d, i) {
                 return main.getColor(0);
             })
                 .attr("fill", "#fff")
                 .attr("stroke-width", "2")
-                .attr("r", 12);
+                .attr("r", 0);
             main.svg.selectAll(".dotSelected")
                 .data(values)
                 .enter().append("circle")
+                .classed("line-dot", true)
+                .classed("inner-line-dot", true)
                 .attr("cx", function (d) { return xScale(d.label) + (column / 2); })
                 .attr("cy", function (d) { return yScale(d.value) + margin.top; })
                 .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+                .attr("index", function (d, i) { return i; })
                 .attr("fill", function (d, i) {
                 return main.getColor(0);
             })
                 .attr("stroke", "#fff")
-                .attr("stroke-width", "2")
-                .attr("r", 6)
+                .attr("stroke-width", "4")
+                .attr("r", 7)
                 .on("mouseover", synchronizedMouseOver)
                 .on("mouseout", synchronizedMouseOut);
         };
@@ -527,7 +576,7 @@ define("pie", ["require", "exports", "d3", "abstract/roundChart"], function (req
                     return main.outArc(d);
                 });
             };
-            _this.svg = _this.createSVG();
+            _this.svg = _this.createSVG("piechart");
             return _this;
         }
         Pie.prototype.create = function () {
@@ -550,6 +599,7 @@ define("pie", ["require", "exports", "d3", "abstract/roundChart"], function (req
                 .enter()
                 .append("g")
                 .classed("arc", true)
+                .classed("hover", true)
                 .attr("transform", "translate(" + (canvasWidth / 2) + "," + (radius + legendHeight) + ")")
                 .attr("index", function (d, i) { return i; })
                 .attr("color", function (d, i) {
@@ -580,15 +630,16 @@ define("pie", ["require", "exports", "d3", "abstract/roundChart"], function (req
                 var index = arc.attr("index");
                 var color = arc.attr("color");
                 var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-                d3.selectAll(arcSelector).style("fill", color)
+                d3.selectAll(arcSelector)
+                    .style("fill", color)
                     .classed("animate", true);
             };
             var synchronizedMouseOut = function () {
                 var arc = d3.select(this);
                 var index = arc.attr("index");
                 var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-                var selectedArc = d3.selectAll(arcSelector);
-                selectedArc.style("fill", "#ffffff")
+                var selectedArc = d3.selectAll(arcSelector)
+                    .style("fill", "#ffffff")
                     .classed("animate", false);
             };
             g.on("mouseover", synchronizedMouseOver)

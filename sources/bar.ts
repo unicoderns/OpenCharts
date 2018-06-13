@@ -54,7 +54,7 @@ export class Bar extends RegularChart {
 
         let settings = main.settings;
         let data = settings.data[0];
-        let axis = settings.axis;
+        let axis = settings.axis || { x: {} };
         let width = main.getCanvasWidth();
         let height = main.getCanvasHeight();
 
@@ -71,7 +71,7 @@ export class Bar extends RegularChart {
 
         let chartName = main.selector + "-chart";
 
-        main.svg = main.createSVG();
+        main.svg = main.createSVG("barchart");
 
         let xScale = main.getXScale(axis.x.type, chartW);
         let yScale = main.getYScale(chartH);
@@ -81,7 +81,8 @@ export class Bar extends RegularChart {
             .data(values)
             .enter()
             .append("rect")
-            .attr("class", "bar")
+            .classed("bar", true)
+            .classed("hover", true)
             .attr("fill", function (d, i) {
                 return main.getColor(0);
             })
