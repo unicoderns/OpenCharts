@@ -1,10 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define("utils", ["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var Types;
     (function (Types) {
         Types[Types["pie"] = 0] = "pie";
@@ -39,6 +45,7 @@ define("utils", ["require", "exports"], function (require, exports) {
 });
 define("abstract/chart", ["require", "exports", "d3"], function (require, exports, d3) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var Chart = (function () {
         function Chart(selector) {
             this.width = 400;
@@ -69,7 +76,7 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
                 console.error("Opencharts error: no data provided");
             }
         };
-        Chart.prototype.createSVG = function () {
+        Chart.prototype.createSVG = function (type) {
             var width = this.width;
             var height = this.height;
             return d3.select("#" + this.selector)
@@ -79,6 +86,7 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
                 .attr("preserveAspectRatio", "xMinYMin meet")
                 .attr("viewBox", "0 0 " + width + " " + height)
                 .classed("openchart", true)
+                .classed(type, true)
                 .classed("svg-content-responsive", true);
         };
         ;
@@ -102,23 +110,95 @@ define("abstract/chart", ["require", "exports", "d3"], function (require, export
     }());
     exports.Chart = Chart;
 });
-define("abstract/regularChart", ["require", "exports", "abstract/chart"], function (require, exports, chart_1) {
+define("interfaces/IAxis", ["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var X;
+    (function (X) {
+        X[X["time"] = 0] = "time";
+        X[X["string"] = 1] = "string";
+    })(X = exports.X || (exports.X = {}));
+});
+define("interfaces/IData", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("abstract/regularChart", ["require", "exports", "d3", "interfaces/IAxis", "abstract/chart"], function (require, exports, d3, IAxis, chart_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var RegularChart = (function (_super) {
         __extends(RegularChart, _super);
         function RegularChart() {
-            return _super.apply(this, arguments) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        RegularChart.prototype.fillDefaults = function () {
+            var main = this;
+            if (main.settings.axis === undefined) {
+                main.settings.axis = {};
+            }
+            if (main.settings.axis.x === undefined) {
+                main.settings.axis.x = {};
+            }
+            if (main.settings.axis.x.ticks === undefined) {
+                main.settings.axis.x.ticks = 10;
+            }
+            if (main.settings.axis.x.type === undefined) {
+                main.settings.axis.x.type = IAxis.X.string;
+            }
+            if (main.settings.axis.x.type === "string") {
+                main.settings.axis.x.type = IAxis.X.string;
+            }
+            if (main.settings.axis.x.type === "time") {
+                main.settings.axis.x.type = IAxis.X.time;
+                if (main.settings.axis.x.format === undefined) {
+                    main.settings.axis.x.format = "%m/%d/%y";
+                }
+            }
+        };
+        RegularChart.prototype.getXScale = function (type, width) {
+            var scale;
+            var values = this.settings.data[0].values;
+            var labels = [];
+            if (type === IAxis.X.time) {
+                scale = d3.scaleTime()
+                    .domain([
+                    new Date(values[0].label * 1000),
+                    d3.timeDay.offset(new Date(values[values.length - 1].label * 1000), 1)
+                ])
+                    .range([0, width]);
+            }
+            else {
+                values.forEach(function (item) {
+                    labels.push(item.label);
+                });
+                scale = d3.scaleBand()
+                    .domain(labels)
+                    .rangeRound([0, width]);
+            }
+            return scale;
+        };
+        RegularChart.prototype.getYScale = function (height) {
+            var scale;
+            var values = this.settings.data[0].values;
+            scale = d3.scaleLinear()
+                .domain([
+                d3.max(values, function (d) { return d.value; }),
+                d3.min(values, function (d) { return d.value; })
+            ])
+                .range([0, height]);
+            return scale;
+        };
         return RegularChart;
     }(chart_1.Chart));
     exports.RegularChart = RegularChart;
 });
 define("abstract/roundChart", ["require", "exports", "abstract/chart"], function (require, exports, chart_2) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var RoundChart = (function (_super) {
         __extends(RoundChart, _super);
         function RoundChart() {
-            var _this = _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.height = 400;
             return _this;
         }
@@ -203,19 +283,9 @@ define("abstract/roundChart", ["require", "exports", "abstract/chart"], function
     }(chart_2.Chart));
     exports.RoundChart = RoundChart;
 });
-define("interfaces/IData", ["require", "exports"], function (require, exports) {
-    "use strict";
-});
-define("interfaces/IAxis", ["require", "exports"], function (require, exports) {
-    "use strict";
-    var X;
-    (function (X) {
-        X[X["time"] = 0] = "time";
-        X[X["string"] = 1] = "string";
-    })(X = exports.X || (exports.X = {}));
-});
 define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/IAxis"], function (require, exports, regularChart_1, d3, IAxis) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var Bar = (function (_super) {
         __extends(Bar, _super);
         function Bar(selector) {
@@ -260,36 +330,12 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             _this.margin = { top: 1, right: 0, bottom: 18, left: 22 };
             return _this;
         }
-        Bar.prototype.fillDefaults = function () {
-            var main = this;
-            if (main.settings.axis === undefined) {
-                main.settings.axis = {};
-            }
-            if (main.settings.axis.x === undefined) {
-                main.settings.axis.x = {};
-            }
-            if (main.settings.axis.x.ticks === undefined) {
-                main.settings.axis.x.ticks = 10;
-            }
-            if (main.settings.axis.x.type === undefined) {
-                main.settings.axis.x.type = IAxis.X.string;
-            }
-            if (main.settings.axis.x.type === "string") {
-                main.settings.axis.x.type = IAxis.X.string;
-            }
-            if (main.settings.axis.x.type === "time") {
-                main.settings.axis.x.type = IAxis.X.time;
-                if (main.settings.axis.x.format === undefined) {
-                    main.settings.axis.x.format = "%m/%d/%y";
-                }
-            }
-        };
         Bar.prototype.create = function () {
             var main = this;
             this.fillDefaults();
             var settings = main.settings;
             var data = settings.data[0];
-            var axis = settings.axis;
+            var axis = settings.axis || { x: {} };
             var width = main.getCanvasWidth();
             var height = main.getCanvasHeight();
             var values = data.values;
@@ -300,14 +346,15 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             var gap = 2;
             var barWidth = (chartW / valuesLength) - gap;
             var chartName = main.selector + "-chart";
-            main.svg = main.createSVG();
+            main.svg = main.createSVG("barchart");
             var xScale = main.getXScale(axis.x.type, chartW);
             var yScale = main.getYScale(chartH);
             this.svg.selectAll("rect")
-                .data(values, function (d) { return d.value; })
+                .data(values)
                 .enter()
                 .append("rect")
-                .attr("class", "bar")
+                .classed("bar", true)
+                .classed("hover", true)
                 .attr("fill", function (d, i) {
                 return main.getColor(0);
             })
@@ -325,46 +372,13 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             this.createYLegends(yScale);
         };
         ;
-        Bar.prototype.getXScale = function (type, width) {
-            var scale;
-            var values = this.settings.data[0].values;
-            var labels = [];
-            if (type === IAxis.X.time) {
-                scale = d3.scaleTime()
-                    .domain([
-                    new Date(values[0].label * 1000),
-                    d3.timeDay.offset(new Date(values[values.length - 1].label * 1000), 1)
-                ])
-                    .range([0, width]);
-            }
-            else {
-                values.forEach(function (item) {
-                    labels.push(item.label);
-                });
-                scale = d3.scaleBand()
-                    .domain(labels)
-                    .rangeRound([0, width]);
-            }
-            return scale;
-        };
-        Bar.prototype.getYScale = function (height) {
-            var scale;
-            var values = this.settings.data[0].values;
-            scale = d3.scaleLinear()
-                .domain([
-                d3.max(values, function (d) { return d.value; }),
-                d3.min(values, function (d) { return d.value; })
-            ])
-                .range([0, height]);
-            return scale;
-        };
         Bar.prototype.createXLegends = function (xScale, height) {
             var main = this;
             var axis = main.settings.axis;
             var margin = main.margin;
             if (axis.x.type === IAxis.X.time) {
                 this.svg.append("g")
-                    .attr("class", "axis")
+                    .attr("class", "x axis")
                     .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
                     .call(d3.axisBottom(xScale)
                     .ticks(axis.x.ticks)
@@ -372,7 +386,7 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             }
             else {
                 this.svg.append("g")
-                    .attr("class", "axis")
+                    .attr("class", "x axis")
                     .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
                     .call(d3.axisBottom(xScale)
                     .ticks(axis.x.ticks));
@@ -382,7 +396,7 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
             var main = this;
             var margin = main.margin;
             this.svg.append("g")
-                .attr("class", "axis")
+                .attr("class", "y axis")
                 .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
                 .call(d3.axisLeft(yScale)
                 .ticks(10));
@@ -391,18 +405,160 @@ define("bar", ["require", "exports", "abstract/regularChart", "d3", "interfaces/
     }(regularChart_1.RegularChart));
     exports.Bar = Bar;
 });
-define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (require, exports, roundChart_1, d3) {
+define("line", ["require", "exports", "d3", "abstract/regularChart"], function (require, exports, d3, regularChart_2) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Line = (function (_super) {
+        __extends(Line, _super);
+        function Line(selector) {
+            var _this = _super.call(this, selector) || this;
+            _this.update = function () {
+                var main = this;
+                var settings = main.settings;
+                var margin = this.margin;
+                var axis = settings.axis || { x: {} };
+                var width = main.getCanvasWidth();
+                var height = main.getCanvasHeight();
+                var chartW = width - (margin.left + margin.right);
+                var chartH = height - (margin.top + margin.bottom);
+                var data = settings.data[0];
+                var values = data.values;
+                var valuesLength = values.length;
+                var column = (chartW / valuesLength);
+                var xScale = main.getXScale(axis.x.type, chartW);
+                var yScale = main.getYScale(chartH);
+                var line = d3.line()
+                    .x(function (d) { return xScale(d.label) + (column / 2); })
+                    .y(function (d) { return yScale(d.value) + margin.top; })
+                    .curve(d3.curveMonotoneX);
+                main.svg.selectAll("path.line")
+                    .datum(values)
+                    .transition()
+                    .duration(1000)
+                    .ease(d3.easeLinear)
+                    .delay(0)
+                    .attr("d", line);
+                main.svg.selectAll(".outer-line-dot")
+                    .data(values)
+                    .attr("r", 0)
+                    .attr("cx", function (d) { return xScale(d.label) + (column / 2); })
+                    .attr("cy", function (d) { return yScale(d.value) + margin.top; });
+                main.svg.selectAll(".inner-line-dot")
+                    .data(values)
+                    .transition()
+                    .duration(1000)
+                    .ease(d3.easeLinear)
+                    .delay(0)
+                    .attr("cx", function (d) { return xScale(d.label) + (column / 2); })
+                    .attr("cy", function (d) { return yScale(d.value) + margin.top; });
+            };
+            _this.margin = { top: 8, right: 0, bottom: 18, left: 42 };
+            return _this;
+        }
+        Line.prototype.create = function () {
+            var main = this;
+            var chartName = main.selector + "-chart";
+            var settings = main.settings;
+            var axis = settings.axis || { x: {} };
+            var margin = this.margin;
+            var width = main.getCanvasWidth();
+            var height = main.getCanvasHeight();
+            var chartW = width - (margin.left + margin.right);
+            var chartH = height - (margin.top + margin.bottom);
+            var data = settings.data[0];
+            var values = data.values;
+            var valuesLength = values.length;
+            var column = (chartW / valuesLength);
+            this.fillDefaults();
+            main.svg = main.createSVG("linechart");
+            var xScale = main.getXScale(axis.x.type, chartW);
+            var yScale = main.getYScale(chartH);
+            var line = d3.line()
+                .x(function (d) { return xScale(d.label) + (column / 2); })
+                .y(function (d) { return yScale(d.value) + margin.top; })
+                .curve(d3.curveMonotoneX);
+            var synchronizedMouseOver = function () {
+                var arc = d3.select(this);
+                var index = arc.attr("index");
+                var arcSelector = "." + "outer-line-dot-" + chartName + "-dot-index-" + index;
+                d3.selectAll(arcSelector).transition().duration(400).delay(0)
+                    .attr("r", 12)
+                    .attr("stroke", function (d, i) {
+                    return main.getColor(0);
+                });
+            };
+            var synchronizedMouseOut = function () {
+                var arc = d3.select(this);
+                var index = arc.attr("index");
+                var arcSelector = "." + "outer-line-dot-" + chartName + "-dot-index-" + index;
+                d3.selectAll(arcSelector).transition().duration(100).delay(0)
+                    .attr("r", 0)
+                    .attr("stroke", "#fff");
+            };
+            main.svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
+                .call(d3.axisBottom(xScale));
+            main.svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+                .call(d3.axisLeft(yScale));
+            main.svg.append("path")
+                .datum(values)
+                .classed("line", true)
+                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+                .attr("d", line);
+            main.svg.selectAll(".dot")
+                .data(values)
+                .enter().append("circle")
+                .attr("cx", function (d) { return xScale(d.label) + (column / 2); })
+                .attr("cy", function (d) { return yScale(d.value) + margin.top; })
+                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+                .attr("class", function (d, i) {
+                return "line-dot outer-line-dot outer-line-dot-" + chartName + "-dot-index-" + i;
+            })
+                .attr("stroke", function (d, i) {
+                return main.getColor(0);
+            })
+                .attr("fill", "#fff")
+                .attr("stroke-width", "2")
+                .attr("r", 0);
+            main.svg.selectAll(".dotSelected")
+                .data(values)
+                .enter().append("circle")
+                .classed("line-dot", true)
+                .classed("inner-line-dot", true)
+                .attr("cx", function (d) { return xScale(d.label) + (column / 2); })
+                .attr("cy", function (d) { return yScale(d.value) + margin.top; })
+                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+                .attr("index", function (d, i) { return i; })
+                .attr("fill", function (d, i) {
+                return main.getColor(0);
+            })
+                .attr("stroke", "#fff")
+                .attr("stroke-width", "4")
+                .attr("r", 7)
+                .on("mouseover", synchronizedMouseOver)
+                .on("mouseout", synchronizedMouseOut);
+        };
+        ;
+        return Line;
+    }(regularChart_2.RegularChart));
+    exports.Line = Line;
+});
+define("pie", ["require", "exports", "d3", "abstract/roundChart"], function (require, exports, d3, roundChart_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var Pie = (function (_super) {
         __extends(Pie, _super);
-        function Pie() {
-            var _this = _super.apply(this, arguments) || this;
+        function Pie(selector) {
+            var _this = _super.call(this, selector) || this;
             _this.update = function () {
                 var main = this;
                 var data = main.settings.data;
                 function arcTween(a) {
-                    var i = d3.interpolate(this._current, a);
-                    this._current = i(0);
+                    var i = d3.interpolate(this.current, a);
+                    this.current = i(0);
                     return function (t) {
                         return main.arc(i(t));
                     };
@@ -420,45 +576,30 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
                     return main.outArc(d);
                 });
             };
+            _this.svg = _this.createSVG("piechart");
             return _this;
         }
         Pie.prototype.create = function () {
             var main = this;
-            var data = main.settings.data;
+            var chartName = main.selector + "-chart";
             var canvasWidth = main.getCanvasWidth();
             var canvasHeight = main.getCanvasHeight();
-            var chartName = main.selector + "-chart";
-            var synchronizedMouseOver = function () {
-                var arc = d3.select(this);
-                var index = arc.attr("index");
-                var color = arc.attr("color");
-                var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-                d3.selectAll(arcSelector).style("fill", color)
-                    .classed("animate", true);
-            };
-            var synchronizedMouseOut = function () {
-                var arc = d3.select(this);
-                var index = arc.attr("index");
-                var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
-                var selectedArc = d3.selectAll(arcSelector);
-                selectedArc.style("fill", "#ffffff")
-                    .classed("animate", false);
-            };
-            main.svg = main.createSVG();
+            var data = main.settings.data;
             var calculatedLegends = main.createSVGLegends(main.svg);
-            main.pie = d3.pie().value(function (d) {
-                return d.value;
-            });
             var legendHeight = calculatedLegends.height + 10;
             canvasHeight = canvasHeight - legendHeight;
             var radius = Math.min(canvasWidth, canvasHeight) / 2;
             main.arc = d3.arc().outerRadius(radius - 10).innerRadius(0);
             main.outArc = d3.arc().innerRadius(radius).outerRadius(radius - 6);
+            main.pie = d3.pie().value(function (d) {
+                return d.value;
+            });
             var g = main.svg.selectAll(".arc")
                 .data(main.pie(data))
                 .enter()
                 .append("g")
                 .classed("arc", true)
+                .classed("hover", true)
                 .attr("transform", "translate(" + (canvasWidth / 2) + "," + (radius + legendHeight) + ")")
                 .attr("index", function (d, i) { return i; })
                 .attr("color", function (d, i) {
@@ -474,7 +615,7 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
                 .attr("d", function (d) {
                 return main.arc(d);
             })
-                .each(function (d) { this._current = d; });
+                .each(function (d) { this.current = d; });
             g.append("path")
                 .attr("class", function (d, i) {
                 return "outer-arc pie-outer-arc pie-outer-" + chartName + "-arc-index-" + i;
@@ -483,7 +624,24 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
                 .attr("d", function (d) {
                 return main.outArc(d);
             })
-                .each(function (d) { this._current = d; });
+                .each(function (d) { this.current = d; });
+            var synchronizedMouseOver = function () {
+                var arc = d3.select(this);
+                var index = arc.attr("index");
+                var color = arc.attr("color");
+                var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
+                d3.selectAll(arcSelector)
+                    .style("fill", color)
+                    .classed("animate", true);
+            };
+            var synchronizedMouseOut = function () {
+                var arc = d3.select(this);
+                var index = arc.attr("index");
+                var arcSelector = "." + "pie-outer-" + chartName + "-arc-index-" + index;
+                var selectedArc = d3.selectAll(arcSelector)
+                    .style("fill", "#ffffff")
+                    .classed("animate", false);
+            };
             g.on("mouseover", synchronizedMouseOver)
                 .on("mouseout", synchronizedMouseOut);
         };
@@ -492,12 +650,14 @@ define("pie", ["require", "exports", "abstract/roundChart", "d3"], function (req
     }(roundChart_1.RoundChart));
     exports.Pie = Pie;
 });
-define("opencharts", ["require", "exports", "bar", "pie"], function (require, exports, bar_1, pie_1) {
+define("opencharts", ["require", "exports", "bar", "pie", "line"], function (require, exports, bar_1, pie_1, line_1) {
     "use strict";
     function __export(m) {
         for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
     }
+    Object.defineProperty(exports, "__esModule", { value: true });
     __export(bar_1);
     __export(pie_1);
+    __export(line_1);
 });
 //# sourceMappingURL=opencharts.js.map

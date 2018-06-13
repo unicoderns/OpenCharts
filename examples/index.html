@@ -12,18 +12,42 @@
 </head>
 
 <body>
+    <style type="text/css">
+        /* Style the lines by removing the fill and applying a stroke */
+
+        .line {
+            fill: none;
+            stroke: #ffab00;
+            stroke-width: 3;
+        }
+
+        /* Style the dots by assigning a fill and stroke */
+
+        .dot {
+            fill: #ffab00;
+            stroke: #fff;
+        }
+    </style>
+
+
     <div class="columns small-4">
         <h3>Pie:</h3>
-        <div id="hola"></div>
+        <div id="pie"></div>
     </div>
     <div class="columns small-8">
         <h3>Bar:</h3>
         <h4>String on X</h4>
-        <div id="hola2"></div>
+        <div id="bar1"></div>
         <h4>Date on X</h4>
-        <div id="hola3"></div>
+        <div id="bar2"></div>
+
         <!--	<opencharts-pie id="hola2" data-object="oc_examples.data"></opencharts-pie> -->
     </div>
+    <div class="columns small-12">
+        <h3>Line:</h3>
+        <div id="line1"></div>
+    </div>
+
     <script src="../bower_components/d3/d3.min.js"></script>
     <script src="./vendor/require.js"></script>
     <script src="../build/opencharts.js"></script>

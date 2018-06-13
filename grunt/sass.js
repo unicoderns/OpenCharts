@@ -24,7 +24,7 @@
 
 module.exports = function(grunt, tasks) {
     // Load our node module required for this task.
-    grunt.loadNpmTasks('grunt-contrib-sass');
+    grunt.loadNpmTasks('grunt-sass');
 
     // The configuration for a specific task.
     tasks.sass = {

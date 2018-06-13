@@ -93,7 +93,7 @@ export class Chart {
     // ------------------------------------------------------------------------------------------
     // Create SVG image
     // ------------------------------------------------------------------------------------------
-    protected createSVG(): any {
+    protected createSVG(type: string): any {
         let width = this.width;
         let height = this.height;
         return d3.select("#" + this.selector)
@@ -103,6 +103,7 @@ export class Chart {
             .attr("preserveAspectRatio", "xMinYMin meet")
             .attr("viewBox", "0 0 " + width + " " + height)
             .classed("openchart", true)
+            .classed(type, true)
             .classed("svg-content-responsive", true);
     };
 

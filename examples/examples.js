@@ -21,32 +21,43 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE          //
 // SOFTWARE.                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////
-(function() {
+(function () {
     var oc_examples = {};
 
     oc_examples.now = Date.now();
     oc_examples.months = new Array("Apples", "Pineapples", "Oranges", "Peaches", "Bananas");
 
     // Pie Data
-    oc_examples.pie = function() {
+    oc_examples.pie = function () {
         return {
-            data: [
-                { label: "Category A", value: Math.random() * 100, color: "#9b3388" },
-                { label: "Category B", value: Math.random() * 100, color: "#4f99fc" },
-                { label: "Category C", value: Math.random() * 100, color: "#fe8a4d" },
+            data: [{
+                    label: "Category A",
+                    value: Math.random() * 100,
+                    color: "#9b3388"
+                },
+                {
+                    label: "Category B",
+                    value: Math.random() * 100,
+                    color: "#4f99fc"
+                },
+                {
+                    label: "Category C",
+                    value: Math.random() * 100,
+                    color: "#fe8a4d"
+                },
             ]
         };
     };
 
     // Bar Data
-    oc_examples.bar1 = function() {
+    oc_examples.bar1 = function () {
         return {
             width: 700,
             height: 350,
             data: [{
                 title: "Default data",
                 color: "#9b3388",
-                values: (function() {
+                values: (function () {
                     values = [];
                     for (i = 0; i < 4; i++) {
                         values.push({
@@ -61,7 +72,7 @@
     };
 
     // Bar Time X Data
-    oc_examples.bar2 = function() {
+    oc_examples.bar2 = function () {
         return {
             width: 700,
             height: 350,
@@ -75,11 +86,32 @@
             data: [{
                 title: "Default data",
                 color: "#4f99fc",
-                values: (function() {
+                values: (function () {
                     values = [];
                     for (i = 0; i < 20; i++) {
                         values.push({
                             label: oc_examples.now + (i * 86400),
+                            value: Math.random() * 100
+                        });
+                    }
+                    return values;
+                })()
+            }]
+        };
+    };
+
+    oc_examples.line1 = function () {
+        return {
+            width: 700,
+            height: 350,
+            data: [{
+                title: "Default data",
+                color: "#ffab00",
+                values: (function () {
+                    values = [];
+                    for (i = 0; i < 4; i++) {
+                        values.push({
+                            label: oc_examples.months[i],
                             value: Math.random() * 100
                         });
                     }
@@ -96,14 +128,15 @@
         }
     });
 
-    require(['opencharts'], function(opencharts) {
+    require(['opencharts'], function (opencharts) {
+
         // Pie
-        var pie = new opencharts.Pie("#hola");
+        var pie = new opencharts.Pie("#pie");
         pie.setSettings(oc_examples.pie());
         pie.create();
 
         function updatePie() {
-            setTimeout(function() {
+            setTimeout(function () {
                 pie.setSettings(oc_examples.pie());
                 pie.update();
                 updatePie();
@@ -111,12 +144,12 @@
         }
 
         // Bar
-        var bar = new opencharts.Bar("#hola2");
+        var bar = new opencharts.Bar("#bar1");
         bar.setSettings(oc_examples.bar1());
         bar.create();
 
         function updateBar() {
-            setTimeout(function() {
+            setTimeout(function () {
                 bar.setSettings(oc_examples.bar1());
                 bar.update();
                 updateBar();
@@ -124,22 +157,36 @@
         }
 
         // Bar2
-        var bar2 = new opencharts.Bar("#hola3");
+        var bar2 = new opencharts.Bar("#bar2");
         bar2.setSettings(oc_examples.bar2());
         bar2.create();
 
         function updateBar2() {
-            setTimeout(function() {
+            setTimeout(function () {
                 bar2.setSettings(oc_examples.bar2());
                 bar2.update();
                 updateBar2();
             }, 3000);
         }
 
+        // Line1
+        var line = new opencharts.Line("#line1");
+        line.setSettings(oc_examples.line1());
+        line.create();
+
+        function updateLine1() {
+            setTimeout(function () {
+                line.setSettings(oc_examples.line1());
+                line.update();
+                updateLine1();
+            }, 3000);
+        }
+        
         // Trigger updates
         updatePie();
         updateBar();
         updateBar2();
+        updateLine1();
 
     });
 })();
